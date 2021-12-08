@@ -4,7 +4,7 @@ using namespace std;
 
 int main(){
   vector B(2,3);
-  vector A;//bite
+  vector A;
   vector C(1,10);
   B.display();
   A.display();
