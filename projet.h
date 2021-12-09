@@ -20,14 +20,15 @@ class vector{
 
 
 
-class particule: public vector {
+class particle: public vector {
   // A particule is descibred by its coordinates, velocity and acceleration.
  public:
   vector X;
   vector V;
   vector A;
-  particule();
-  particule(vector X_, vector V_, vector A_);
+  particle();
+  particle(vector X_, vector V_, vector A_);
+  void display();
   //  ~particule();
 };
 

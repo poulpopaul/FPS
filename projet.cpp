@@ -13,7 +13,7 @@ vector::vector(double x_,double y_):
 }
 
 void vector::display(){
-  cout << "(" << this->x << "," << this->y << ")" << endl;
+  cout << "(" << this->x << "," << this->y << ")";
 }
 
 //vector::~vector()
@@ -40,18 +40,27 @@ vector operator*(double l, vector v1){
   return vector(v1.x * l, v1.y * l);
 }
 
-particule::particule()
+particle::particle()
 {
   X = vector();
   V = vector();
   A = vector();
 }
 
-particule::particule(vector X_, vector V_, vector A_):
+particle::particle(vector X_, vector V_, vector A_):
   X(X_),V(V_),A(A_)
 {
 }
 
+void particle::display(){
+  cout << "[";
+  X.display();
+  cout << ",";
+  V.display();
+  cout << ",";
+  A.display();
+  cout << "]";
+}
 //particule::~particule(){
 //}
 
