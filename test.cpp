@@ -3,8 +3,10 @@ using namespace std;
 #include"projet.h"
 
 int main(){
-  particle A(vector(1,3),vector(2,2),vector(0,0));
-  A.display();
+  grid G = grid(100,100);
+  cell C = G.get_cell(50,50);  
+  C.display();
+  cout << "test" << endl;
   return 0;
 
 }
