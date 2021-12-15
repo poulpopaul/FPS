@@ -154,15 +154,9 @@ grid::grid():
 grid::grid(int L_, int N_):
   L(L_), N(N_)
 {
- cell **tab = new cell*[N_];
+ tab = new cell*[N_];
  for (int i = 0; i<N_;i++){
    tab[i] = new cell[N_];
- }
- for (int i = 0; i<N_;i++) {
-   for (int j = 0; j<N_;j++){
-    tab[i][j].add_particle(6);
-    tab[i][j].display();
-   }
  }
 }
 
@@ -194,11 +188,9 @@ if (j>= this->N){
   j -= this->N;
   y = this->L;
 }
-
-//cell **tableau = this->tab;
-//cell cell_ = cell();// = //(this->tab)[i][j];
-cell cell_ = this->tab[i][j];
-cell_.x = x;
-cell_.y = y;
-return cell_;
+(this->tab[i][j]).x = x;
+(this->tab[i][j]).y = y;
+return this->tab[i][j];
 }
+
+//bibite
