@@ -193,10 +193,4 @@ if (j>= this->N){
 return this->tab[i][j];
 }
 
-<<<<<<< HEAD
-//bibite
-//bibite
-=======
-//test
-//push
->>>>>>> 0e2af689ad2b2768210a084bd943f3bed424833f
+
