@@ -22,7 +22,7 @@ class vect{
   friend vect operator*(vect v1, vect v2);
   friend vect operator*(vect v1, double l);
   friend vect operator*(double l, vect v1);
-  
+
 };
 
 
@@ -71,7 +71,45 @@ class grid: public cell{
   cell get_cell(int i, int j);
 
 
-};
 
+};
+class system:public grid{
+public:
+    int Nx;
+    int N;
+    double density;
+    double deltaR;
+    double rc;
+    double rc2;
+    double radius;
+    double diameter;
+    double L;
+    double area;
+    double half_L;
+    double Nc;
+    double lc;
+    grid Grid;
+    *liste_disques;
+    double energy;
+    double viriel;
+    double E_kin;
+    double pressure;
+    double counter;
+    double sum_temp;
+    double sum_pressure;
+    double sum_temp2;
+    double sum_pressure2;
+    system();
+    system(const unsigned int Nx_, const unsigned double density_, const unsigned double rc_, const unsigned double deltaR);
+    ~system();
+
+
+
+
+
+
+
+
+    };
 
 #endif
