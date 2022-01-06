@@ -1,6 +1,7 @@
 #include<iostream>
 #include <vector>
 #include<cstring>
+#include<math.h>
 using namespace std;
 #include"projet.h"
 
@@ -27,7 +28,7 @@ void vect::display(){
 
 vect::~vect()
 {
-  delete vect_name;
+  free(vect_name);
 }
 
 vect operator+(vect v1, vect v2){
@@ -163,6 +164,8 @@ grid::grid(const grid &g): cell(g)
   tab = g.tab;
 }
 
+grid::~grid(){}
+
 cell grid::get_cell(int i,int j){
 int x_ = 0;
 int y_ = 0;
@@ -185,4 +188,62 @@ if (j>= this->N){
 (this->tab[i][j]).x = x_;
 (this->tab[i][j]).y = y_;
 return this->tab[i][j];
+}
+
+void grid::set_cell(int i,int j,int index){
+int x_ = 0;
+int y_ = 0;
+if (i < 0){
+  i += this->N;
+  x_ = - this->L;
+}
+if (i >= this->N){
+  i -= this->N;
+  x_ = this->L;
+}
+if (j<0){
+  j+= this->N;
+  y_ = -this->N;
+}
+if (j>= this->N){
+  j -= this->N;
+  y_ = this->L;
+}
+(this->tab[i][j]).x = x_;
+(this->tab[i][j]).y = y_;
+tab[i][j].add_particle(index);
+}
+
+system1::system1():
+Nx(1),density(1),rc(1),deltaR(0.1),rc2(rc*rc),rv(rc+deltaR),rv2((rc+deltaR)*(rc+deltaR)),L(sqrt(PI/density)*0.5*Nx),area(L*L),half_L(0.5*L),Nc(int(L/rv)),lc(L/(double)Nc)
+{
+ Grid = grid(Nc,L);
+}
+
+system1::system1(int Nx_, double density_, double rc_, double deltaR_):
+Nx(Nx_),N(Nx_*Nx_),density(density_),rc(rc_),rc2(rc_*rc_),deltaR(deltaR_),rv(rc_+deltaR),rv2((rc_+deltaR)*(rc_+deltaR)),L(sqrt(PI/density)*0.5*Nx_),area(L*L),half_L(0.5*L),Nc(int(L/rv)),lc(L/(double)Nc)
+{
+  Grid = grid(Nc,L);
+  for (int i = 0; i < N; i++){
+    list_particle.push_back(particle());
+  }
+}
+
+system1::system1(const system1& s) : Nx(s.Nx),N(Nx*Nx),density(s.density),rc(s.rc),rc2(rc*rc),deltaR(s.deltaR),rv(rc+deltaR),rv2((rc+deltaR)*(rc+deltaR)),L(sqrt(PI/(double)density)*0.5*Nx),area(L*L),half_L(0.5*L),Nc(int(L/rv)),lc(L/(double)Nc)
+{
+  strcpy(system1_name, s.system1_name);
+  Grid = s.Grid;
+  list_particle = s.list_particle;
+}
+
+system1::~system1(){
+  delete system1_name;
+}
+
+void system1::init_particle(int index,vect X,vect V){
+  this->list_particle[index].X = X;
+  this->list_particle[index].V = V;
+  double i = int(X.x/this->lc);
+  double j = int(X.y/this->lc);
+  this -> Grid.set_cell(int(i),int(j),index); //remplace get_cell + add_particle !
 }

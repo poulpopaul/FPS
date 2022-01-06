@@ -46,7 +46,7 @@ class cell: public particle{
   // Thus, we must be able to add or remove  particles from the cell.
   // A cell will be described by its (x,y) coordinates in a grid.
 public:
-vector<unsigned int> list_particle = {};
+vector<unsigned int> list_particle;
 unsigned int x;
 unsigned int y;
 unsigned int n = 0;
@@ -68,47 +68,49 @@ class grid: public cell{
   grid();
   grid( const grid&);
   grid(int L_, int N_);
+  ~grid();
   cell get_cell(int i, int j);
+  void set_cell(int i,int j, int index);
 
 
 
 };
-class system:public grid{
+class system1 : public grid{
 public:
+    char * system1_name;// = new char[15];
+    const double PI  =3.141592653589793238463;
     int Nx;
     int N;
     double density;
     double deltaR;
     double rc;
     double rc2;
-    double radius;
-    double diameter;
+    double rv;
+    double rv2;
+    double radius = 0.5;
+    double diameter = 1;
     double L;
     double area;
     double half_L;
     double Nc;
     double lc;
     grid Grid;
-    *liste_disques;
-    double energy;
-    double viriel;
-    double E_kin;
-    double pressure;
-    double counter;
-    double sum_temp;
-    double sum_pressure;
-    double sum_temp2;
-    double sum_pressure2;
-    system();
-    system(const unsigned int Nx_, const unsigned double density_, const unsigned double rc_, const unsigned double deltaR);
-    ~system();
-
-
-
-
-
-
-
+    vector<particle> list_particle; //= {}
+    double energy = 0;
+    double viriel = 0;
+    double E_kin = 0;
+    double E_pot = 0;
+    double pressure = 0;
+    double counter = 0;
+    double sum_temp = 0;
+    double sum_pressure = 0;
+    double sum_temp2 = 0;
+    double sum_pressure2 = 0;
+    system1();
+    system1(int Nx_, double density_, double rc_, double deltaR_);
+    system1(const system1&);
+    ~system1();
+    void init_particle(int i,vect X,vect V);
 
     };
 
