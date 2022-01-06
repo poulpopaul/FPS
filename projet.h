@@ -111,7 +111,10 @@ public:
     system1(const system1&);
     ~system1();
     void init_particle(int i,vect X,vect V);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 7ef5c0ab9bbce840375694585abe76f3198b4a40
     };
 
 #endif
