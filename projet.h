@@ -70,7 +70,7 @@ class grid: public cell{
   grid(int L_, int N_);
   ~grid();
   cell get_cell(int i, int j);
-  void set_cell(int i,int j, int index);
+  void set_cell(int i,int j, int index); //allow to update list_particle easily
 
 
 

@@ -190,7 +190,7 @@ if (j>= this->N){
 return this->tab[i][j];
 }
 
-void grid::set_cell(int i,int j,int index){
+void grid::set_cell(int i,int j,int index){ //allow to update list_particle easily
 int x_ = 0;
 int y_ = 0;
 if (i < 0){
