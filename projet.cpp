@@ -2,6 +2,8 @@
 #include <vector>
 #include<cstring>
 #include<math.h>
+#include<time.h>
+#include <stdlib.h>
 using namespace std;
 #include"projet.h"
 
@@ -15,11 +17,12 @@ vect::vect(double x_,double y_):
 {
 }
 
+
 vect::vect(const vect & v){
   x = v.x;
   y = v.y;
  // vect_name = new char[strlen(v.vect_name)];
-  strcpy(vect_name, v.vect_name);
+  //strcpy(vect_name, v.vect_name);
 }
 
 void vect::display(){
@@ -28,16 +31,18 @@ void vect::display(){
 
 vect::~vect()
 {
-  free(vect_name);
+  //delete vect_name;
 }
 
 vect operator+(vect v1, vect v2){
   return vect(v1.x + v2.x, v1.y + v2.y);
 }
 
+
 vect operator-(vect v1, vect v2){
   return vect(v1.x - v2.x, v1.y - v2.y);
 }
+
 
 vect operator*(vect v1, vect v2){
   return vect(v1.x * v2.x, v1.y * v2.y);
@@ -66,8 +71,18 @@ particle::particle(const particle &p): vect(p)
 X = p.X;
 V = p.V;
 A = p.A;
-//particle_name = new char[strlen(p.particle_name)];
+particle_name = new char[strlen(p.particle_name)];
 strcpy(particle_name, p.particle_name);
+}
+
+void particle::set_x(double x_)
+{
+  X.x = x_;
+}
+
+void particle::set_y(double y_)
+{
+  X.y = y_;
 }
 
 void particle::display(){
@@ -80,7 +95,7 @@ void particle::display(){
   cout << "]";
 }
 particle::~particle(){
-  delete particle_name;
+  //delete particle_name;
 }
 
 cell::cell():
@@ -105,8 +120,8 @@ list_particle = c.list_particle;
 }
 
 cell::~cell(){
-  delete cell_name;
- list_particle.clear();
+ // delete cell_name;
+ //list_particle.clear();
 }
 
 void cell::add_particle(unsigned int index){
@@ -246,4 +261,90 @@ void system1::init_particle(int index,vect X,vect V){
   double i = int(X.x/this->lc);
   double j = int(X.y/this->lc);
   this -> Grid.set_cell(int(i),int(j),index); //remplace get_cell + add_particle !
+}
+  void system1::init_system(double velocity){
+   double dx = this->L/this->Nx;
+  cout << "initial distance : " << dx << endl;
+   if (dx <= this->diameter){     throw "Density: too high!";//cout << "too high density" << endl;
+   }
+  double dy = dx;
+   double x = dx/2;
+   double y = x;
+  double px = 0.0;
+   double py = 0.0;
+   srand( (unsigned)time( NULL ) );
+   for (int k = 0; k<this->N; k++){
+     double a = (rand()/RAND_MAX)*PI*2.0;   double vx = velocity*cos(a);
+     double vy = velocity*sin(a);
+    px += vx;
+     py += vy;
+    vect X(x,y);
+    vect V(vx,vy);
+    init_particle(k,X,V);
+    x += dx;
+     if (x>this->L){
+      x = x/2;
+       y += dy;
+    }
+  }
+    for (int k = 0; k < this->L; k++){
+      particle p = this->list_particle[k];
+      vect S(px/(this->N),py/(this->N));
+      p.V = p.V - S;  
+    }
+  //calculate_force();
+  //construct_neighbour_list();
+}
+
+void system1::move_particle(particle* p, int index, vect X1){ // reference in order to really change p ! 
+  if (X1.x < 0){X1 = X1 + vect(this->L,0);}
+  if (X1.x > this->L){X1 = X1 - vect(this->L, 0);}
+  if (X1.y < 0){X1 = X1 + vect(0,this->L);}
+  if (X1.y > this->L){X1 = X1 - vect(0,this->L);}
+  int i = int(p->X.x/this->lc);
+  int j = int(p->X.y/this->lc);
+  int i1 = int(X1.x/this->lc);
+ int j1 = int(X1.y/this->lc);
+  if (i != i1 || j!=j1){
+    cell C = this->Grid.get_cell(i,j);
+    C.remove_particle(index);
+    cell C1 = this->Grid.get_cell(i1,j1);
+    C1.add_particle(index);
+  }
+  p->display();
+  p->X = X1;
+  cout << endl;
+  p->display();
+  cout << endl;
+}
+
+void system1::construct_neighbour_list(){
+  vector<vect> list_neighbour = {};
+  double move_max = 0.0;
+  int Nc = this->Nc;
+  for (int i = 0; i< Nc; i++){
+    for (int j = 0; j< Nc; j++){
+      cell C = this->Grid.get_cell(i,j);
+      for (int k = -1; i<2;k++){
+        for (int l = -1; l<2;l++){
+          cell C1 = this->get_cell(i+k,j+l);
+          for (int index = 0; index<C.n; index++){
+            for (int index1 = 0; index1<C1.n; index1++){
+              if (C1.list_particle[index1] < C.list_particle[index]){
+                particle p = this->list_particle[index];
+                particle p1 = this->list_particle[index1];
+                double dx = p1.X.x+ C1.x -p.X.x;
+                double dy = p1.X.y+ C1.y - p.X.y;
+                double r2 = dx*dx + dy*dy;
+                if (r2 <= this->rv2){
+                  list_neighbour.push_back(vect(index1,index));
+                }
+              }
+            }
+          }
+        }
+
+      }
+    }
+  }
 }

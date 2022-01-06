@@ -37,6 +37,8 @@ class particle: public vect {
   particle();
   particle(const particle &);
   particle(vect X_, vect V_, vect A_);
+  void set_x(double x_);
+  void set_y(double y_);
   void display();
   ~particle();
 };
@@ -111,6 +113,9 @@ public:
     system1(const system1&);
     ~system1();
     void init_particle(int i,vect X,vect V);
+    void init_system(double velocity);
+    void move_particle(particle* p, int index, vect X1);
+    void construct_neighbour_list();
     };
 
 #endif
