@@ -108,6 +108,7 @@ public:
     double sum_pressure = 0;
     double sum_temp2 = 0;
     double sum_pressure2 = 0;
+    vector<vect> list_neighbour = {};
     system1();
     system1(int Nx_, double density_, double rc_, double deltaR_);
     system1(const system1&);
@@ -117,6 +118,7 @@ public:
     void move_particle(particle* p, int index, vect X1);
     void construct_neighbour_list();
     void compute_force();
+    void compute_force_with_neighbour();
     };
 
 #endif

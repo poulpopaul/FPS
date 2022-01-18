@@ -353,8 +353,8 @@ void system1::construct_neighbour_list(){
 
 void system1::compute_force(){
   for (int k = 0; k<this->N; k++){
-    particle particle = this->list_particle[k];
-    particle.A = vect(0,0);
+    particle p = this->list_particle[k];
+    p.A = vect(0,0);
     this->E_pot = 0.0;
     this->viriel = 0.0;
   }
@@ -389,6 +389,45 @@ void system1::compute_force(){
           } 
         }
       }
+    }
+  }
+}
+
+void system1::compute_force_with_neighbour(){
+  for (int k = 0; k<this->N; k++){
+    particle p = this->list_particle[k];
+    p.A = vect(0,0);
+    this->E_pot = 0.0;
+    this->viriel = 0.0;
+  }
+  for (int i = 0; i<this->list_neighbour.size();i++){
+    particle p = this->list_particle[list_neighbour[i].x];
+    particle p1 = this->list_particle[list_neighbour[i].y];
+    vect dX(p1.X.x-p.X.x,p1.X.y-p.X.y);
+    if (dX.x >= this->half_L){
+      dX = dX - vect(this->L,0);
+    }
+    if (dX.x < -this->half_L){
+      dX = dX + vect(this->L,0);
+    }
+    if (dX.y >= this->half_L){
+      dX = dX - vect(0,this->L);
+    }
+    if (dX.y < -this->half_L){
+      dX = dX + vect(0,this->L);
+    }
+    double r2 = dX.x*dX.x + dX.y*dX.y;
+    if (r2 <= this->rv2){
+      double ir2 = 1.0/r2;
+      double ir6 = ir2*ir2*ir2;
+      double v = 24.0*ir6*(ir6-0.5);
+      double f = 2.0*v*ir2;
+      double fx = f*dX.x;
+      double fy = f*dX.y;
+      p1.A = p1.A + vect(fx,fy);
+      p.A = p.A - vect(fx,fy);
+      this->E_pot += 4.0*ir6*(ir6-1.0);
+      this->viriel +=v;
     }
   }
 }
