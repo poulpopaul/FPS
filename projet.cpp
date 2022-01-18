@@ -1,7 +1,7 @@
 #include<iostream>
 #include <vector>
 #include<cstring>
-#include<math.h>
+#include<cmath>
 #include<time.h>
 #include <stdlib.h>
 using namespace std;
@@ -275,6 +275,7 @@ void system1::init_system(double velocity){
    double py = 0.0;
    srand( (unsigned)time( NULL ) );
    for (int k = 0; k<this->N; k++){
+     cout << k << "/" << this->N << endl;
      double a = (rand()/RAND_MAX)*PI*2.0;  
     double vx = velocity*cos(a);
      double vy = velocity*sin(a);
@@ -290,12 +291,13 @@ void system1::init_system(double velocity){
     }
   }
     for (int k = 0; k < this->L; k++){
+      cout << k << "/" << this->L << endl;
       particle p = this->list_particle[k];
       vect S(px/(this->N),py/(this->N));
       p.V = p.V - S;  
     }
   compute_force();
-  construct_neighbour_list();
+  //construct_neighbour_list();
 }
 
 void system1::move_particle(particle* p, int index, vect X1){ // reference in order to really change p ! 
@@ -359,13 +361,15 @@ void system1::compute_force(){
     this->viriel = 0.0;
   }
   for (int i = 0; i<this->Nc;i++){
+    cout << i+1 << "/" << Nc <<endl;
     for (int j = 0; j<this->Nc;j++){
+      cout << "|||" << j+1 <<"/" << Nc << endl;
       cell c = this->Grid.get_cell(i,j);
       for (int k = -1;k<2;k++){
         for (int l = -1;l<2;l++){
           cell c1 = this->Grid.get_cell(i+k,j+l);
-          for (int index=0;index < c.n;i++){
-            for (int index1=0;index < c1.n;i++){
+          for (int index=0;index < c.n;index++){
+            for (int index1=0;index1 < c1.n;index1++){
               if (c1.list_particle[index1] < c.list_particle[index]){
                 particle p = this->list_particle[index];
                 particle p1 = this->list_particle[index1];
@@ -429,5 +433,106 @@ void system1::compute_force_with_neighbour(){
       this->E_pot += 4.0*ir6*(ir6-1.0);
       this->viriel +=v;
     }
+  }
+}
+
+void system1::compute_E_kin(){
+  this->E_kin = 0.0;
+  for (int i = 0; i<this->N;i++){
+    particle p = this->list_particle[i];
+    this->E_kin += 0.5*(p.V.x*p.V.x + p.V.y*p.V.y);
+  }
+  this->pressure = (this->viriel + this->E_kin)/this->area;
+  this->E_kin /= this->N;
+  this->energy = this->E_kin+this->E_pot/this->N;
+  this->sum_temp += this->E_kin;
+  this->sum_temp2 += this->E_kin * this->E_kin;
+  this->sum_pressure += this->pressure;
+  this->sum_pressure2 += this->pressure * this->pressure;
+  this->counter += 1;
+}
+
+void system1::init_mean(){
+  this->counter = 0.0;
+  this->sum_temp = 0.0;
+  this->sum_pressure = 0.0;
+  this->sum_temp2 = 0.0;
+  this->sum_pressure2 = 0.0;
+}
+
+
+void system1::mean_temp(vect* v){
+  double Tm = this->sum_temp/this->counter;
+  v->x = Tm;
+  v->y = sqrt(this->sum_temp2/this->counter - Tm*Tm);
+}
+
+void system1::mean_pressure(vect* v){
+  double Pm= this->sum_pressure/this->counter;
+  v->x = Pm;
+  v->y = sqrt(this->sum_pressure2/this->counter - Pm*Pm);
+}
+
+void system1::adjust_v(double T){
+  double Tm = this->sum_temp/this->counter;
+  double f = sqrt(T/Tm);
+  for (int k = 0; k<this->N;k++){
+    particle p = this->list_particle[k];
+    p.V = p.V*f;
+  }
+}
+
+void system1::verlet(double h, double hd2){
+  for (int k =0; k<this->N;k++){
+    particle p =this->list_particle[k];
+    p.V = p.V + hd2*p.A;
+    vect X1(p.X.x + h*p.V.x,p.X.y+h*p.V.y);
+    this->move_particle(&p,k,X1);
+  }
+  this->compute_force();
+  for (int k =0; k<this->N;k++){
+    particle p =this->list_particle[k];
+    p.V = p.V + hd2*p.A;
+  }
+}
+
+
+void system1::verlet_neighbour(double h, double hd2){
+  for (int k =0; k<this->N;k++){
+    particle p =this->list_particle[k];
+    p.V = p.V + hd2*p.A;
+    vect X1(p.X.x + h*p.V.x,p.X.y+h*p.V.y);
+    this->move_particle(&p,k,X1);
+  }
+  this->compute_force_with_neighbour();
+  double v2max = 0.0;
+  for (int k =0; k<this->N;k++){
+    particle p =this->list_particle[k];
+    p.V = p.V + hd2*p.A;
+    double v2 = p.V.x * p.V.x + p.V.y*p.V.y;
+    if (v2 < v2max){
+      v2max = v2;
+    }
+    this->move_max += sqrt(v2max)*h;
+    if (this->move_max*2.0 > this->deltaR){
+      this->construct_neighbour_list();
+      this->move_max = 0.0;
+    }
+  }
+}
+
+
+void system1::integration(double h,unsigned int n){
+  double hd2 = h/2.0;
+  for (int i = 0; i<n;i++){
+    this->verlet(h,hd2);
+  }
+}
+
+void system1::integration_neighbour(double h,unsigned int n){
+  double hd2 = h/2.0;
+  for (int i = 0; i<n;i++){
+    cout << i << "/" << n<< endl;
+    this->verlet_neighbour(h,hd2);
   }
 }

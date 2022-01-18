@@ -109,6 +109,7 @@ public:
     double sum_temp2 = 0;
     double sum_pressure2 = 0;
     vector<vect> list_neighbour = {};
+    double move_max = 0.0;
     system1();
     system1(int Nx_, double density_, double rc_, double deltaR_);
     system1(const system1&);
@@ -119,6 +120,15 @@ public:
     void construct_neighbour_list();
     void compute_force();
     void compute_force_with_neighbour();
+    void compute_E_kin();
+    void init_mean();
+    void mean_temp(vect* v);
+    void mean_pressure(vect* v);
+    void adjust_v(double T);
+    void verlet(double h, double hd2);
+    void verlet_neighbour(double h, double hd2);
+    void integration(double h,unsigned int n);
+    void integration_neighbour(double h,unsigned int n);
     };
 
 #endif
