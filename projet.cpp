@@ -262,7 +262,8 @@ void system1::init_particle(int index,vect X,vect V){
   double j = int(X.y/this->lc);
   this -> Grid.set_cell(int(i),int(j),index); //remplace get_cell + add_particle !
 }
-  void system1::init_system(double velocity){
+
+void system1::init_system(double velocity){
    double dx = this->L/this->Nx;
   cout << "initial distance : " << dx << endl;
    if (dx <= this->diameter){     throw "Density: too high!";//cout << "too high density" << endl;
@@ -274,7 +275,8 @@ void system1::init_particle(int index,vect X,vect V){
    double py = 0.0;
    srand( (unsigned)time( NULL ) );
    for (int k = 0; k<this->N; k++){
-     double a = (rand()/RAND_MAX)*PI*2.0;   double vx = velocity*cos(a);
+     double a = (rand()/RAND_MAX)*PI*2.0;  
+    double vx = velocity*cos(a);
      double vy = velocity*sin(a);
     px += vx;
      py += vy;
@@ -292,8 +294,8 @@ void system1::init_particle(int index,vect X,vect V){
       vect S(px/(this->N),py/(this->N));
       p.V = p.V - S;  
     }
-  //calculate_force();
-  //construct_neighbour_list();
+  compute_force();
+  construct_neighbour_list();
 }
 
 void system1::move_particle(particle* p, int index, vect X1){ // reference in order to really change p ! 
@@ -344,6 +346,48 @@ void system1::construct_neighbour_list(){
           }
         }
 
+      }
+    }
+  }
+}
+
+void system1::compute_force(){
+  for (int k = 0; k<this->N; k++){
+    particle particle = this->list_particle[k];
+    particle.A = vect(0,0);
+    this->E_pot = 0.0;
+    this->viriel = 0.0;
+  }
+  for (int i = 0; i<this->Nc;i++){
+    for (int j = 0; j<this->Nc;j++){
+      cell c = this->Grid.get_cell(i,j);
+      for (int k = -1;k<2;k++){
+        for (int l = -1;l<2;l++){
+          cell c1 = this->Grid.get_cell(i+k,j+l);
+          for (int index=0;index < c.n;i++){
+            for (int index1=0;index < c1.n;i++){
+              if (c1.list_particle[index1] < c.list_particle[index]){
+                particle p = this->list_particle[index];
+                particle p1 = this->list_particle[index1];
+                double dx = p1.X.x+ c.x -p.X.x;
+                double dy = p1.X.y+ c.y - p.X.y;
+                double r2 = dx*dx + dy*dy;
+                if (r2 <= this->rv2){
+                    double ir2 = 1.0/r2;
+                    double ir6 = ir2*ir2*ir2;
+                    double v = 24.0*ir6*(ir6-0.5);
+                    double f = 2.0*v*ir2;
+                    double fx = f*dx;
+                    double fy = f*dy;
+                    p1.A = p1.A + vect(fx,fy);
+                    p.A = p.A - vect(fx,fy);
+                    this->E_pot += 4.0*ir6*(ir6-1.0);
+                    this->viriel +=v;
+                }
+              }
+            }
+          } 
+        }
       }
     }
   }

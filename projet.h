@@ -116,6 +116,7 @@ public:
     void init_system(double velocity);
     void move_particle(particle* p, int index, vect X1);
     void construct_neighbour_list();
+    void compute_force();
     };
 
 #endif
