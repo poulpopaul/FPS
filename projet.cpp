@@ -297,7 +297,7 @@ void system1::init_system(double velocity){
       p.V = p.V - S;  
     }
   compute_force();
-  //construct_neighbour_list();
+  construct_neighbour_list();
 }
 
 void system1::move_particle(particle* p, int index, vect X1){ // reference in order to really change p ! 
@@ -315,11 +315,11 @@ void system1::move_particle(particle* p, int index, vect X1){ // reference in or
     cell C1 = this->Grid.get_cell(i1,j1);
     C1.add_particle(index);
   }
-  p->display();
+  //p->display();
   p->X = X1;
-  cout << endl;
-  p->display();
-  cout << endl;
+  //cout << endl;
+  //p->display();
+  //cout << endl;
 }
 
 void system1::construct_neighbour_list(){
@@ -329,9 +329,9 @@ void system1::construct_neighbour_list(){
   for (int i = 0; i< Nc; i++){
     for (int j = 0; j< Nc; j++){
       cell C = this->Grid.get_cell(i,j);
-      for (int k = -1; i<2;k++){
+      for (int k = -1; k<2;k++){
         for (int l = -1; l<2;l++){
-          cell C1 = this->get_cell(i+k,j+l);
+          cell C1 = this->Grid.get_cell(i+k,j+l);
           for (int index = 0; index<C.n; index++){
             for (int index1 = 0; index1<C1.n; index1++){
               if (C1.list_particle[index1] < C.list_particle[index]){
