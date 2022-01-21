@@ -4,6 +4,7 @@
 #include<cmath>
 #include<time.h>
 #include <stdlib.h>
+#include<fstream>
 using namespace std;
 #include"projet.h"
 
@@ -230,13 +231,13 @@ tab[i][j].add_particle(index);
 }
 
 system1::system1():
-Nx(1),density(1),rc(1),deltaR(0.1),rc2(rc*rc),rv(rc+deltaR),rv2((rc+deltaR)*(rc+deltaR)),L(sqrt(PI/density)*0.5*Nx),area(L*L),half_L(0.5*L),Nc(int(L/rv)),lc(L/(double)Nc)
+Nx(1),density(1),rc(1),deltaR(0.1),rc2(rc*rc),rv(rc+deltaR),rv2((rc+deltaR)*(rc+deltaR)),L(sqrt(PI/double(density))*0.5*Nx),area(L*L),half_L(0.5*L),Nc(int(L/double(rv))),lc(L/(double)Nc)
 {
  Grid = grid(Nc,L);
 }
 
 system1::system1(int Nx_, double density_, double rc_, double deltaR_):
-Nx(Nx_),N(Nx_*Nx_),density(density_),rc(rc_),rc2(rc_*rc_),deltaR(deltaR_),rv(rc_+deltaR),rv2((rc_+deltaR)*(rc_+deltaR)),L(sqrt(PI/density)*0.5*Nx_),area(L*L),half_L(0.5*L),Nc(int(L/rv)),lc(L/(double)Nc)
+Nx(Nx_),N(Nx_*Nx_),density(density_),rc(rc_),rc2(rc_*rc_),deltaR(deltaR_),rv(rc_+deltaR),rv2((rc_+deltaR)*(rc_+deltaR)),L(sqrt(PI/double(density))*0.5*Nx_),area(L*L),half_L(0.5*L),Nc(int(L/double(rv))),lc(L/(double)Nc)
 {
   Grid = grid(Nc,L);
   for (int i = 0; i < N; i++){
@@ -258,46 +259,56 @@ system1::~system1(){
 void system1::init_particle(int index,vect X,vect V){
   this->list_particle[index].X = X;
   this->list_particle[index].V = V;
-  double i = int(X.x/this->lc);
-  double j = int(X.y/this->lc);
+  double i = int(X.x/double(this->lc));
+  double j = int(X.y/double(this->lc));
   this -> Grid.set_cell(int(i),int(j),index); //remplace get_cell + add_particle !
 }
 
 void system1::init_system(double velocity){
-   double dx = this->L/this->Nx;
+  double dx = this->L/double(this->Nx);
   cout << "initial distance : " << dx << endl;
    if (dx <= this->diameter){     throw "Density: too high!";//cout << "too high density" << endl;
    }
+   else{
   double dy = dx;
-   double x = dx/2;
-   double y = x;
+  double x = dx*0.5;
+  double y = x;
+  //cout << "y avant : " << y << endl;
   double px = 0.0;
    double py = 0.0;
    srand( (unsigned)time( NULL ) );
    for (int k = 0; k<this->N; k++){
-     cout << k << "/" << this->N << endl;
-     double a = (rand()/RAND_MAX)*PI*2.0;  
+  //srand( (unsigned)time( NULL ) );
+   //  cout << k << "/" << this->N << endl;
+     
+     double a = (rand()/double(RAND_MAX))*PI*2.0;  
     double vx = velocity*cos(a);
-     double vy = velocity*sin(a);
+    double vy = velocity*sin(a);
     px += vx;
-     py += vy;
-    vect X(x,y);
-    vect V(vx,vy);
-    init_particle(k,X,V);
+    py += vy;
+    //cout << "a : " << a<< endl;
+    //cout << "vy :" << vy << endl;
+    vect X1(x,y);
+    //X1.display();
+    vect V1(vx,vy);
+    init_particle(k,X1,V1);
     x += dx;
+   // cout << "y apres :" << y<<endl;
      if (x>this->L){
-      x = x/2;
+      x = 0;//x*0.5;
        y += dy;
+      // cout << "y 2apres :" << y << endl;
     }
   }
     for (int k = 0; k < this->L; k++){
-      cout << k << "/" << this->L << endl;
+      //cout << k << "/" << this->L << endl;
       particle p = this->list_particle[k];
-      vect S(px/(this->N),py/(this->N));
+      vect S(px/double(this->N),py/double(this->N));
       p.V = p.V - S;  
     }
   compute_force();
   construct_neighbour_list();
+   }
 }
 
 void system1::move_particle(particle* p, int index, vect X1){ // reference in order to really change p ! 
@@ -305,10 +316,10 @@ void system1::move_particle(particle* p, int index, vect X1){ // reference in or
   if (X1.x > this->L){X1 = X1 - vect(this->L, 0);}
   if (X1.y < 0){X1 = X1 + vect(0,this->L);}
   if (X1.y > this->L){X1 = X1 - vect(0,this->L);}
-  int i = int(p->X.x/this->lc);
-  int j = int(p->X.y/this->lc);
-  int i1 = int(X1.x/this->lc);
- int j1 = int(X1.y/this->lc);
+  int i = int(p->X.x/double(this->lc));
+  int j = int(p->X.y/double(this->lc));
+  int i1 = int(X1.x/double(this->lc));
+ int j1 = int(X1.y/double(this->lc));
   if (i != i1 || j!=j1){
     cell C = this->Grid.get_cell(i,j);
     C.remove_particle(index);
@@ -316,7 +327,12 @@ void system1::move_particle(particle* p, int index, vect X1){ // reference in or
     C1.add_particle(index);
   }
   //p->display();
+
+  //X.display();
   p->X = X1;
+
+  //X1.display();
+  //p->display();
   //cout << endl;
   //p->display();
   //cout << endl;
@@ -361,9 +377,9 @@ void system1::compute_force(){
     this->viriel = 0.0;
   }
   for (int i = 0; i<this->Nc;i++){
-    cout << i+1 << "/" << Nc <<endl;
+    //cout << i+1 << "/" << Nc <<endl;
     for (int j = 0; j<this->Nc;j++){
-      cout << "|||" << j+1 <<"/" << Nc << endl;
+      //cout << "|||" << j+1 <<"/" << Nc << endl;
       cell c = this->Grid.get_cell(i,j);
       for (int k = -1;k<2;k++){
         for (int l = -1;l<2;l++){
@@ -377,7 +393,7 @@ void system1::compute_force(){
                 double dy = p1.X.y+ c.y - p.X.y;
                 double r2 = dx*dx + dy*dy;
                 if (r2 <= this->rv2){
-                    double ir2 = 1.0/r2;
+                    double ir2 = 1.0/double(r2);
                     double ir6 = ir2*ir2*ir2;
                     double v = 24.0*ir6*(ir6-0.5);
                     double f = 2.0*v*ir2;
@@ -422,7 +438,7 @@ void system1::compute_force_with_neighbour(){
     }
     double r2 = dX.x*dX.x + dX.y*dX.y;
     if (r2 <= this->rv2){
-      double ir2 = 1.0/r2;
+      double ir2 = 1.0/double(r2);
       double ir6 = ir2*ir2*ir2;
       double v = 24.0*ir6*(ir6-0.5);
       double f = 2.0*v*ir2;
@@ -442,9 +458,9 @@ void system1::compute_E_kin(){
     particle p = this->list_particle[i];
     this->E_kin += 0.5*(p.V.x*p.V.x + p.V.y*p.V.y);
   }
-  this->pressure = (this->viriel + this->E_kin)/this->area;
-  this->E_kin /= this->N;
-  this->energy = this->E_kin+this->E_pot/this->N;
+  this->pressure = (this->viriel + this->E_kin)/double(this->area);
+  this->E_kin /= double(this->N);
+  this->energy = this->E_kin+this->E_pot/double(this->N);
   this->sum_temp += this->E_kin;
   this->sum_temp2 += this->E_kin * this->E_kin;
   this->sum_pressure += this->pressure;
@@ -462,20 +478,20 @@ void system1::init_mean(){
 
 
 void system1::mean_temp(vect* v){
-  double Tm = this->sum_temp/this->counter;
+  double Tm = this->sum_temp/double(this->counter);
   v->x = Tm;
-  v->y = sqrt(this->sum_temp2/this->counter - Tm*Tm);
+  v->y = sqrt(this->sum_temp2/double(this->counter) - Tm*Tm);
 }
 
 void system1::mean_pressure(vect* v){
-  double Pm= this->sum_pressure/this->counter;
+  double Pm= this->sum_pressure/double(this->counter);
   v->x = Pm;
-  v->y = sqrt(this->sum_pressure2/this->counter - Pm*Pm);
+  v->y = sqrt(this->sum_pressure2/double(this->counter) - Pm*Pm);
 }
 
 void system1::adjust_v(double T){
-  double Tm = this->sum_temp/this->counter;
-  double f = sqrt(T/Tm);
+  double Tm = this->sum_temp/double(this->counter);
+  double f = sqrt(T/double(Tm));
   for (int k = 0; k<this->N;k++){
     particle p = this->list_particle[k];
     p.V = p.V*f;
@@ -502,7 +518,7 @@ void system1::verlet_neighbour(double h, double hd2){
     particle p =this->list_particle[k];
     p.V = p.V + hd2*p.A;
     vect X1(p.X.x + h*p.V.x,p.X.y+h*p.V.y);
-    this->move_particle(&p,k,X1);
+    this->move_particle(&list_particle[k],k,vect(p.X.x + h*p.V.x,p.X.y+h*p.V.y));
   }
   this->compute_force_with_neighbour();
   double v2max = 0.0;
@@ -530,9 +546,20 @@ void system1::integration(double h,unsigned int n){
 }
 
 void system1::integration_neighbour(double h,unsigned int n){
-  double hd2 = h/2.0;
+  int taille = this->list_particle.size();
+  fstream fichx, fichy;
+  fichx.open("x.txt", ios::out);
+  fichy.open("y.txt", ios::out);
+  fichx << taille << endl;
+  fichy << taille << endl;
+  double hd2 = h*0.5;
   for (int i = 0; i<n;i++){
-    cout << i << "/" << n<< endl;
+    for (int k = 0; k<taille; k++){
+  //sys.list_particle[k].display();
+      fichx << this->list_particle[k].X.x << endl;
+      fichy << this->list_particle[k].X.y << endl;
+    }
+    //cout << i << "/" << n<< endl;
     this->verlet_neighbour(h,hd2);
   }
 }
