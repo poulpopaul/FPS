@@ -9,8 +9,10 @@ int Nx = 20;
 double densite = 0.3;
 double rc = 2.5;
 double h = 0.01;
-system1 sys(Nx,densite,rc,5);
-sys.init_system(1);
+system1 sys(Nx,densite,rc,0.5);
+sys.init_system(1.0);
+//for (int k = 0; k<sys.list_particle.size();k++){sys.list_particle[k].display();cout << endl;}
+//cout << "|||||||||||||||||||||||||||||||||||||||||||" << endl;
 sys.integration_neighbour(h,1000);
 
 ///int n = sys.list_particle.size();

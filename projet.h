@@ -48,7 +48,7 @@ class cell: public particle{
   // Thus, we must be able to add or remove  particles from the cell.
   // A cell will be described by its (x,y) coordinates in a grid.
 public:
-vector<unsigned int> list_particle;
+vector<unsigned int> list_index_particle;
 unsigned int x;
 unsigned int y;
 unsigned int n = 0;
@@ -65,8 +65,8 @@ void display();
 class grid: public cell{
   public:
   int L;
-  int N;
-  cell **tab = new cell*[N];
+  int Nc;
+  cell **tab = new cell*[Nc];
   grid();
   grid( const grid&);
   grid(int L_, int N_);
@@ -116,7 +116,7 @@ public:
     ~system1();
     void init_particle(int i,vect X,vect V);
     void init_system(double velocity);
-    void move_particle(particle* p, int index, vect X1);
+    void move_particle(particle* p, int index, vect* X1);
     void construct_neighbour_list();
     void compute_force();
     void compute_force_with_neighbour();
