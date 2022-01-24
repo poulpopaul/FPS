@@ -370,20 +370,62 @@ void system1::construct_neighbour_list(){
   int Nc = this->Nc;
   for (int i = 0; i< Nc; i++){
     for (int j = 0; j< Nc; j++){
-      cell C = this->Grid.tab[i][j];
+      int x_ = 0;
+      int y_ = 0;
+      if (i < 0){
+        i += this->Nc;
+        x_ = - this->L;
+      }
+      if (i >= this->Nc){
+        i -= this->Nc;
+        x_ = this->L;
+      }
+      if (j<0){
+        j+= this->Nc;
+        y_ = -this->L;
+      }
+      if (j>= this->Nc){
+        j -= this->Nc;
+        y_ = this->L;
+      }
+      this->Grid.tab[i][j].x = x_;
+      this->Grid.tab[i][j].y = y_;
+      //cell C = this->Grid.tab[i][j];
       for (int k = -1; k<2;k++){
         for (int l = -1; l<2;l++){
-          cell C1 = this->Grid.tab[i+k][j+l];
-          for (int index = 0; index<C.n; index++){
-            for (int index1 = 0; index1<C1.n; index1++){
-              if (C1.list_index_particle[index1] < C.list_index_particle[index]){
+          int i1 = i+k;
+          int j1 = j+l;
+          int x_ = 0;
+          int y_ = 0;
+          if (i1 < 0){
+            i1 += this->Nc;
+            x_ = - this->L;
+          }
+          if (i1 >= this->Nc){
+            i1 -= this->Nc;
+            x_ = this->L;
+          }
+          if (j1<0){
+            j1+= this->Nc;
+            y_ = -this->L;
+          }
+          if (j1>= this->Nc){
+            j1 -= this->Nc;
+            y_ = this->L;
+          }
+          this->Grid.tab[i1][j1].x = x_;
+          this->Grid.tab[i1][j1].y = y_;
+          //cell C1 = this->Grid.tab[i+k][j+l];
+          for (int index = 0; index<this->Grid.tab[i][j].n; index++){
+            for (int index1 = 0; index1<this->Grid.tab[i1][j1].n; index1++){
+              if (this->Grid.tab[i1][j1].list_index_particle[index1] < this->Grid.tab[i][j].list_index_particle[index]){
                 particle p = this->list_particle[index];
                 particle p1 = this->list_particle[index1];
-                double dx = p1.X.x+ C1.x -p.X.x;
-                double dy = p1.X.y+ C1.y - p.X.y;
+                double dx = this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].X.x+ this->Grid.tab[i1][j1].x -this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].X.x;
+                double dy = this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].X.y+ this->Grid.tab[i1][j1].y - this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].X.y;
                 double r2 = dx*dx + dy*dy;
                 if (r2 <= this->rv2){
-                  this->list_neighbour.push_back(vect(index1,index));
+                  this->list_neighbour.push_back(vect(this->Grid.tab[i1][j1].list_index_particle[index1],this->Grid.tab[i][j].list_index_particle[index]));
                 }
               }
             }
@@ -421,8 +463,8 @@ void system1::compute_force(){
         j -= this->Nc;
         y_ = this->L;
       }
-      this->tab[i][j].x = x_;
-      this->tab[i][j].y = y_;
+      this->Grid.tab[i][j].x = x_;
+      this->Grid.tab[i][j].y = y_;
       //cell c = this->Grid.tab[i][j];
       for (int k = -1;k<2;k++){
         for (int l = -1;l<2;l++){
@@ -446,8 +488,8 @@ void system1::compute_force(){
             j1 -= this->Nc;
             y_ = this->L;
           }
-          this->tab[i1][j1].x = x_;
-          this->tab[i1][j1].y = y_;
+          this->Grid.tab[i1][j1].x = x_;
+          this->Grid.tab[i1][j1].y = y_;
           //cell c1 = this->Grid.tab[i+k][j+l];
           for (int index=0;index < this->Grid.tab[i][j].n;index++){
             for (int index1=0;index1 < this->Grid.tab[i1][j1].n;index1++){
