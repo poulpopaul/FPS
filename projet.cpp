@@ -136,24 +136,31 @@ void cell::remove_particle(unsigned int index){
   while(i<this->n && b){
     if (this->list_index_particle[i] == index)
     {
-      if (this->n == 1 || i == this->n - 1)
+      if (this->n == 1)// || i == (this->n-1))
       {
-        list_index_particle.pop_back();
+        this->list_index_particle.pop_back();
         this->n--;
       }
       else {
-        list_index_particle[i] = list_index_particle[this->n - 1];
-        list_index_particle.pop_back();
-        this->n--;
+        // cout << list_index_particle[i];
+         // cout <<"   ";
+        int a  = list_index_particle[this->n-1];
+        this->list_index_particle[i] = a;
+        this->list_index_particle.pop_back();
+        this->list_index_particle = {};
+        // cout << list_index_particle[i];
+        //cout << endl;
       }
+      this->n--;
+      b = false;
     }
     else {i++;}
   }
 }
 
 void cell::display(){
-  for (unsigned int i = 0; i < n;i++){
-    cout << list_index_particle[i] << endl;
+  for (unsigned int i = 0; i < this->n;i++){
+    cout << this->list_index_particle[i] << endl;
   }
 }
 
@@ -181,6 +188,37 @@ grid::grid(const grid &g): cell(g)
 }
 
 grid::~grid(){}
+
+void grid::remove(int i,int j,int index){
+  unsigned int c = 0;
+  bool b = true;
+  while(i<this->n && b){
+    if (this->tab[i][j].list_index_particle[c] == index)
+    {
+      if (this->n == 1)// || i == this->n - 1)
+      {
+        this->tab[i][j].list_index_particle.pop_back();
+        this->tab[i][j].n--;
+        this->tab[i][j].list_index_particle = {};
+      }
+      else {
+        // cout << list_index_particle[i];
+         // cout <<"   ";
+        int a  = this->tab[i][j].list_index_particle[this->tab[i][j].n-1];
+        this->tab[i][j].list_index_particle[c] = a;
+        this->tab[i][j].list_index_particle.pop_back();
+        this->tab[i][j].list_index_particle = {};
+        //this->list_index_particle = {};
+        // cout << list_index_particle[i];
+        //cout << endl;
+      }
+      this->n--;
+      b = false;
+    }
+    else {c++;}
+  }
+ // this->tab[i][j].remove_particle(index);
+}
 
 cell grid::get_cell(int i,int j){
 int x_ = 0;
@@ -225,8 +263,8 @@ while (j>= this->Nc){
   j -= this->Nc;
   y_ += this->L;
 }
-(this->tab[i][j]).x = x_;
-(this->tab[i][j]).y = y_;
+this->tab[i][j].x = x_;
+this->tab[i][j].y = y_;
 tab[i][j].add_particle(index);
 }
 
@@ -259,6 +297,7 @@ system1::~system1(){
 void system1::init_particle(int index,vect X,vect V){
   this->list_particle[index].X = X;
   this->list_particle[index].V = V;
+ // this->list_particle[index].A = vect(0,0);
   double i = int(X.x/double(this->lc));
   double j = int(X.y/double(this->lc));
   this -> Grid.set_cell(int(i),int(j),index); //remplace get_cell + add_particle !
@@ -273,43 +312,30 @@ void system1::init_system(double velocity){
   double dy = dx;
   double x = dx*0.5;
   double y = x;
-  //cout << "y avant : " << y << endl;
   double px = 0.0;
-   double py = 0.0;
+  double py = 0.0;
    srand( (unsigned)time( NULL ) );
    for (int k = 0; k<this->N; k++){
-  //srand( (unsigned)time( NULL ) );
-   //  cout << k << "/" << this->N << endl;
-     
       double a = (rand()/double(RAND_MAX))*PI*2.0;  
       double vx = velocity*cos(a);
       double vy = velocity*sin(a);
       px += vx;
       py += vy;
-    //cout << "a : " << a<< endl;
-    //cout << "vy :" << vy << endl;
-      vect X1(x,y);
-    //X1.display();
-      vect V1(vx,vy);
-      init_particle(k,X1,V1);
+      init_particle(k,vect(x,y),vect(vx,vy));
       x += dx;
-   // cout << "y apres :" << y<<endl;
-      if (x>this->L){
-        x = 0;//x*0.5;
+      if (x > this->L){
+        x = dx*0.5;
         y += dy;
-      // cout << "y 2apres :" << y << endl;
       }
     }
     for (int k = 0; k < this->N; k++){
-      //cout << k << "/" << this->L << endl;
       particle p = this->list_particle[k];
-
       vect S(px/double(this->N),py/double(this->N));
       this->list_particle[k].V = p.V - S;  
     }
    }
 compute_force();
- construct_neighbour_list();
+construct_neighbour_list();
 }
 
 void system1::move_particle(particle* p, int index, vect* X1){ // reference in order to really change p ! 
@@ -322,25 +348,20 @@ void system1::move_particle(particle* p, int index, vect* X1){ // reference in o
   int i1 = int(X1->x/double(this->lc));
   int j1 = int(X1->y/double(this->lc));
   if (i != i1 || j!=j1){
-    //cell C = this->Grid.get_cell(i,j);
-    //this->Grid.get_cell(i1,j1).add_particle(index);
+   // cout << "size : " << Grid.get_cell(i,j).n;
+   // cout << " "<<endl;;
+   // this->Grid.tab[i][j].display();
+   // this->Grid.tab[i][j].list_index_particle.pop_back();
+   // cout <<"ok"<<endl;
     //this->Grid.set_cell(i1,j1,index);
-    this->Grid.get_cell(i,j).remove_particle(index);
-    this->Grid.set_cell(i1,j1,index);
-
-    //cell C1 = this->Grid.get_cell(i1,j1);
-
+    this->Grid.tab[i1][j1].add_particle(index);
+   this->Grid.tab[i][j].remove_particle(index);//remove(i,j,index);
+   //this->Grid.get_cell(i,j).remove_particle(index);
+   //this->Grid.tab[i][j].display();
+   // cout << " size 1: " << Grid.get_cell(i,j).n;
+    //cout << endl;
   }
-  //p->display();
-
-  //X.display();
   p->X = *X1;
-
-  //X1.display();
-  //p->display();
-  //cout << endl;
-  //p->display();
-  //cout << endl;
 }
 
 void system1::construct_neighbour_list(){
@@ -349,10 +370,10 @@ void system1::construct_neighbour_list(){
   int Nc = this->Nc;
   for (int i = 0; i< Nc; i++){
     for (int j = 0; j< Nc; j++){
-      cell C = this->Grid.get_cell(i,j);
+      cell C = this->Grid.tab[i][j];
       for (int k = -1; k<2;k++){
         for (int l = -1; l<2;l++){
-          cell C1 = this->Grid.get_cell(i+k,j+l);
+          cell C1 = this->Grid.tab[i+k][j+l];
           for (int index = 0; index<C.n; index++){
             for (int index1 = 0; index1<C1.n; index1++){
               if (C1.list_index_particle[index1] < C.list_index_particle[index]){
@@ -361,7 +382,6 @@ void system1::construct_neighbour_list(){
                 double dx = p1.X.x+ C1.x -p.X.x;
                 double dy = p1.X.y+ C1.y - p.X.y;
                 double r2 = dx*dx + dy*dy;
-                //cout << "neigh r2: " << r2 << endl;
                 if (r2 <= this->rv2){
                   this->list_neighbour.push_back(vect(index1,index));
                 }
@@ -377,42 +397,81 @@ void system1::construct_neighbour_list(){
 
 void system1::compute_force(){
   for (int k = 0; k<this->N; k++){
-    particle p = this->list_particle[k];
     this->list_particle[k].A = vect(0,0);
     this->E_pot = 0.0;
     this->viriel = 0.0;
   }
   for (int i = 0; i<this->Nc;i++){
-    //cout << i+1 << "/" << Nc <<endl;
     for (int j = 0; j<this->Nc;j++){
-      //cout << "|||" << j+1 <<"/" << Nc << endl;
-      cell c = this->Grid.get_cell(i,j);
+      int x_ = 0;
+      int y_ = 0;
+      if (i < 0){
+        i += this->Nc;
+        x_ = - this->L;
+      }
+      if (i >= this->Nc){
+        i -= this->Nc;
+        x_ = this->L;
+      }
+      if (j<0){
+        j+= this->Nc;
+        y_ = -this->L;
+      }
+      if (j>= this->Nc){
+        j -= this->Nc;
+        y_ = this->L;
+      }
+      this->tab[i][j].x = x_;
+      this->tab[i][j].y = y_;
+      //cell c = this->Grid.tab[i][j];
       for (int k = -1;k<2;k++){
         for (int l = -1;l<2;l++){
-          cell c1 = this->Grid.get_cell(i+k,j+l);
-          for (int index=0;index < c.n;index++){
-            for (int index1=0;index1 < c1.n;index1++){
-              if (c1.list_index_particle[index1] < c.list_index_particle[index]){
-                particle p = this->list_particle[index];
-                particle p1 = this->list_particle[index1];
-                double dx = p1.X.x+ c1.x -p.X.x;
-                double dy = p1.X.y+ c1.y - p.X.y;
-                //cout << dy << endl;
-               //cout << "dx: " << dx << " et dy:" << dy << endl;
+          int i1 = i+k;
+          int j1 = j+l;
+          int x_ = 0;
+          int y_ = 0;
+          if (i1 < 0){
+            i1 += this->Nc;
+            x_ = - this->L;
+          }
+          if (i1 >= this->Nc){
+            i1 -= this->Nc;
+            x_ = this->L;
+          }
+          if (j1<0){
+            j1+= this->Nc;
+            y_ = -this->L;
+          }
+          if (j1>= this->Nc){
+            j1 -= this->Nc;
+            y_ = this->L;
+          }
+          this->tab[i1][j1].x = x_;
+          this->tab[i1][j1].y = y_;
+          //cell c1 = this->Grid.tab[i+k][j+l];
+          for (int index=0;index < this->Grid.tab[i][j].n;index++){
+            for (int index1=0;index1 < this->Grid.tab[i1][j1].n;index1++){
+              if (this->Grid.tab[i1][j1].list_index_particle[index1] < this->Grid.tab[i][j].list_index_particle[index]){
+               // cout << c1.list_index_particle[index1];
+               // cout << c.list_index_particle[index];
+                //particle p = this->list_particle[index];
+                //particle p1 = this->list_particle[index1];
+                double dx = this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].X.x+ this->Grid.tab[i1][j1].x -this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].X.x;
+                double dy = this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].X.y+ this->Grid.tab[i1][j1].y - this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].X.y;
                 double r2 = dx*dx + dy*dy;
                 if (r2 < this->rc2){
                     double ir2 = 1.0/double(r2);
-                 //   cout << 'ir2: ' << ir2 <<" et r2:" << r2<< endl;
                     double ir6 = ir2*ir2*ir2;
                     double v = 24.0*ir6*(ir6-0.5);
                     double f = 2.0*v*ir2;
                     double fx = f*dx;
                     double fy = f*dy;
-                    vect(fx,fy).display();
-                  
-                    this->list_particle[index1].A = this->list_particle[index1].A + vect(fx,fy);
-                    this->list_particle[index].A = this->list_particle[index1].A - vect(fx,fy);
-                   // this->list_particle[index].display;
+                   // vect(fx,fy).display();
+                    this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].A.x = this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].A.x + fx;
+                    this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].A.y = this->list_particle[this->Grid.tab[i1][j1].list_index_particle[index1]].A.y + fy;
+                    this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].A.x = this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].A.x - fx;
+                    this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].A.y = this->list_particle[this->Grid.tab[i][j].list_index_particle[index]].A.y - fy;
+                   // this->list_particle[index].A = this->list_particle[index1].A - vect(fx,fy);
                     this->E_pot += 4.0*ir6*(ir6-1.0);
                     this->viriel +=v;
                 }
@@ -427,7 +486,6 @@ void system1::compute_force(){
 
 void system1::compute_force_with_neighbour(){
   for (int k = 0; k<this->N; k++){
-    //particle p = this->list_particle[k];
     this->list_particle[k].A = vect(0,0);
     this->E_pot = 0.0;
     this->viriel = 0.0;
@@ -436,8 +494,6 @@ void system1::compute_force_with_neighbour(){
     particle p = this->list_particle[list_neighbour[i].x];
     particle p1 = this->list_particle[list_neighbour[i].y];
     vect dX(p1.X.x-p.X.x,p1.X.y-p.X.y);
-
-    p1.display();
     while (dX.x >= this->half_L){
       dX.x = dX.x - this->L;
     }
@@ -450,9 +506,7 @@ void system1::compute_force_with_neighbour(){
     while (dX.y < -this->half_L){
       dX.y = dX.y + this->L;
     }
-    //dX.display();
     double r2 = dX.x*dX.x + dX.y*dX.y;
-    //cout << r2 <<endl;
     if (r2 <= this->rc2){
       double ir2 = 1.0/double(r2);
       double ir6 = ir2*ir2*ir2;
@@ -460,13 +514,11 @@ void system1::compute_force_with_neighbour(){
       double f = 2.0*v*ir2;
       double fx = f*dX.x;
       double fy = f*dX.y;
-     // this->list_particle[list_neighbour[i].y].A.display();
-     // this->list_particle[list_neighbour[i].x].A.display();
-      this->list_particle[list_neighbour[i].y].A = p1.A + vect(fx,fy);
-      this->list_particle[list_neighbour[i].x].A = p.A - vect(fx,fy);
-     // this->list_particle[list_neighbour[i].y].A.display();
-     // this->list_particle[list_neighbour[i].x].A.display();
-     // cout << endl;
+      this->list_particle[list_neighbour[i].y].A.x = p1.A.x + fx;
+      this->list_particle[list_neighbour[i].y].A.y = p1.A.y + fy;
+      this->list_particle[list_neighbour[i].x].A.x = p1.A.x - fx;
+      this->list_particle[list_neighbour[i].x].A.y = p1.A.y - fy;
+     // this->list_particle[list_neighbour[i].x].A = p.A - vect(fx,fy);
       this->E_pot += 4.0*ir6*(ir6-1.0);
       this->viriel +=v;
     }
@@ -536,24 +588,16 @@ void system1::verlet(double h, double hd2){
 
 void system1::verlet_neighbour(double h, double hd2){
   for (int k =0; k<this->N;k++){
-    //particle p =this->list_particle[k];
-  //this->list_particle[k].display();
-    // cout << endl;
     this->list_particle[k].V = this->list_particle[k].V + hd2*this->list_particle[k].A;
     vect X1(this->list_particle[k].X.x + h*this->list_particle[k].V.x,this->list_particle[k].X.y+h*this->list_particle[k].V.y);
-    
     this->move_particle(&list_particle[k],k,&X1);
   }
   this->compute_force_with_neighbour();
   double v2max = 0.0;
   for (int k =0; k<this->N;k++){
-    //particle p =this->list_particle[k];
-    //this->list_particle[k].V.display();
     this->list_particle[k].V = this->list_particle[k].V + hd2*this->list_particle[k].A;
-    //this->list_particle[k].V.display();
-    //cout << endl;
     double v2 = this->list_particle[k].V.x * this->list_particle[k].V.x + this->list_particle[k].V.y*this->list_particle[k].V.y;
-    if (v2 < v2max){
+    if (v2 > v2max){
       v2max = v2;
     }
     this->move_max += sqrt(v2max)*h;

@@ -73,6 +73,7 @@ class grid: public cell{
   ~grid();
   cell get_cell(int i, int j);
   void set_cell(int i,int j, int index); //allow to update list_particle easily
+  void remove(int i,int j,int index);
 
 
 
