@@ -14,15 +14,15 @@ class vect{
   double y;
   vect();
   vect(const vect &);
+  vect& operator=(const vect&);
   vect(double x_, double y_);
   void display();
-  ~vect();
+  virtual ~vect();
   friend vect operator+(vect v1, vect v2);
   friend vect operator-(vect v1, vect v2);
   friend vect operator*(vect v1, vect v2);
   friend vect operator*(vect v1, double l);
   friend vect operator*(double l, vect v1);
-
 };
 
 
@@ -40,7 +40,8 @@ class particle: public vect {
   void set_x(double x_);
   void set_y(double y_);
   void display();
-  ~particle();
+  virtual ~particle();
+  particle& operator=(const particle&);
 };
 
 class cell: public particle{
@@ -48,46 +49,49 @@ class cell: public particle{
   // Thus, we must be able to add or remove  particles from the cell.
   // A cell will be described by its (x,y) coordinates in a grid.
 public:
-vector<unsigned int> list_index_particle;
-unsigned int x;
-unsigned int y;
-unsigned int n = 0;
+vector<int> list_index_particle;
+double x;
+double y;
+int n = 0;
 char * cell_name = new char[15];
 cell();
-cell(unsigned int x_, unsigned int y_);
+cell(double x_, double y_);
 cell(const cell &);
-~cell();
-void add_particle(unsigned int index);
-void remove_particle(unsigned int index);
+virtual ~cell();
+void add_particle(int index);
+void remove_particle(int index);
 void display();
+cell& operator=(const cell&);
 };
 
 class grid: public cell{
   public:
   int L;
   int Nc;
+  char * grid_name = new char[15];
   cell **tab = new cell*[Nc];
   grid();
-  grid( const grid&);
+  grid( const grid&g);
   grid(int L_, int N_);
-  ~grid();
+  virtual ~grid();
   cell get_cell(int i, int j);
   void set_cell(int i,int j, int index); //allow to update list_particle easily
   void remove(int i,int j,int index);
+  grid& operator=(const grid&);
 
 
 
 };
 class system1 : public grid{
 public:
-    char * system1_name;// = new char[15];
+    char * system1_name = new char[15];
     const double PI  =3.141592653589793238463;
     int Nx;
     int N;
     double density;
-    double deltaR;
     double rc;
     double rc2;
+    double deltaR;
     double rv;
     double rv2;
     double radius = 0.5;
@@ -97,7 +101,7 @@ public:
     double half_L;
     double Nc;
     double lc;
-    grid Grid;
+    grid Grid = grid(Nc,L);;
     vector<particle> list_particle; //= {}
     double energy = 0;
     double viriel = 0;
@@ -113,8 +117,8 @@ public:
     double move_max = 0.0;
     system1();
     system1(int Nx_, double density_, double rc_, double deltaR_);
-    system1(const system1&);
-    ~system1();
+    system1(const system1&s);
+    virtual ~system1();
     void init_particle(int i,vect X,vect V);
     void init_system(double velocity);
     void move_particle(particle* p, int index, vect* X1);
@@ -128,8 +132,9 @@ public:
     void adjust_v(double T);
     void verlet(double h, double hd2);
     void verlet_neighbour(double h, double hd2);
-    void integration(double h,unsigned int n);
-    void integration_neighbour(double h,unsigned int n);
+    void integration(double h,int n);
+    void integration_neighbour(double h,int n);
+    system1& operator=(const system1&);
     };
 
 #endif
