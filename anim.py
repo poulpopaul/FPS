@@ -2,10 +2,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-X = np.loadtxt(r"D:/System/Git/Git/FPS/x.txt")
-Y = np.loadtxt(r"D:/System/Git/Git/FPS/y.txt")
+X = np.loadtxt(r"x.txt")
+Y = np.loadtxt(r"y.txt")
 
 n = X[0]
+
 
 ims = []
 fig = plt.figure()
@@ -15,8 +16,7 @@ for k in range(100):
     a = 1 +k*int(n)
     b = int(n)+ k*int(n)
     ims.append(plt.plot(X[a:b],Y[a:b],linestyle = ' ',marker = 'o',color = 'r',alpha = 0.5,markersize = 2))
-    
 
-ani = animation.ArtistAnimation(fig, ims,interval = 10,repeat = True)
-ani.save("D:/System/Git/Git/FPS/ani.mp4",fps = 10)
-plt.show(block = False)
+ani = animation.ArtistAnimation(fig, ims,interval = 1,repeat = True)
+ani.save("ani.gif",fps = 1000,writer = 'Pillow')
+#plt.show(block = False)

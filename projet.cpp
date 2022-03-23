@@ -357,7 +357,7 @@ void system1::init_particle(int index,vect X,vect V){
 void system1::init_system(double velocity){
   double dx = this->L/double(this->Nx);
   cout << "initial distance : " << dx << endl;
-   if (dx <= this->diameter){     throw "Density: too high!";//cout << "too high density" << endl;
+   if (dx <= diameter){   throw "Density: too high!";//cout << "too high density" << endl;
    }
    else{
   double dy = dx;
@@ -475,8 +475,8 @@ void system1::construct_neighbour_list(){
           this->Grid.tab[i1][j1].x = x_1;
           this->Grid.tab[i1][j1].y = y_1;
           //cell C1 = this->Grid.tab[i+k][j+l];
-          for (int index = 0; index<this->Grid.tab[i][j].list_index_particle.size(); index++){
-            for (int index1 = 0; index1<this->Grid.tab[i1][j1].list_index_particle.size(); index1++){
+          for (unsigned int index = 0; index<this->Grid.tab[i][j].list_index_particle.size(); index++){
+            for (unsigned int index1 = 0; index1<this->Grid.tab[i1][j1].list_index_particle.size(); index1++){
               if (this->Grid.tab[i1][j1].list_index_particle[index1] < this->Grid.tab[i][j].list_index_particle[index]){
                 //particle p = this->list_particle[index];
                 //particle p1 = this->list_particle[index1];
@@ -530,8 +530,8 @@ void system1::compute_force(){
           this->Grid.tab[i1][j1].x = x_;
           this->Grid.tab[i1][j1].y = y_;
           //cell c1 = this->Grid.tab[i+k][j+l];
-          for (int index=0;index < this->Grid.tab[i][j].list_index_particle.size();index++){
-            for (int index1=0;index1 < this->Grid.tab[i1][j1].list_index_particle.size();index1++){
+          for (unsigned int index=0;index < this->Grid.tab[i][j].list_index_particle.size();index++){
+            for (unsigned int index1=0;index1 < this->Grid.tab[i1][j1].list_index_particle.size();index1++){
               if (this->Grid.tab[i1][j1].list_index_particle[index1] < this->Grid.tab[i][j].list_index_particle[index]){
                // cout << c1.list_index_particle[index1];
                // cout << c.list_index_particle[index];
@@ -681,6 +681,7 @@ void system1::verlet_neighbour(double h, double hd2){
   this->compute_force_with_neighbour();
   double v2max = 0.0;
   for (int k =0; k<this->N;k++){
+    //cout <<k<<"/"<<N<<endl;
     this->list_particle[k].V = this->list_particle[k].V + hd2*this->list_particle[k].A;
     double v2 = this->list_particle[k].V.x * this->list_particle[k].V.x + this->list_particle[k].V.y*this->list_particle[k].V.y;
     if (v2 > v2max){
@@ -689,9 +690,12 @@ void system1::verlet_neighbour(double h, double hd2){
     this->move_max += sqrt(v2max)*h;
     if (this->move_max*2.0 > this->deltaR){
       this->construct_neighbour_list();
+      //cout << "ok_nei"<< endl;
+      //cout << "ok_vn"<< endl;
       this->move_max = 0.0;
     }
   }
+  //cout << "ok boucle"<<endl;
 }
 
 
@@ -711,13 +715,14 @@ void system1::integration_neighbour(double h,int n){
   fichy << taille << endl;
   double hd2 = h*0.5;
   for (int i = 0; i<n;i++){
+    //cout << "ok"<<i<< endl;;
     for (int k = 0; k<taille; k++){
   //sys.list_particle[k].display();
       fichx << this->list_particle[k].X.x << endl;
       fichy << this->list_particle[k].X.y << endl;
     }
     //cout << i << "/" << n<< endl;
-    this->verlet(h,hd2);
+    this->verlet_neighbour(h,hd2);
    // this->list_particle[0].display();
     //cout << endl;
     //cout << "&&&&&&&&&&&&&&&&&&&&&&" << endl;

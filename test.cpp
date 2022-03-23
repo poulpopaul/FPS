@@ -7,13 +7,14 @@ int main(){
 //srand( (unsigned)time( NULL ) );
 int Nx = 20;
 double densite = 0.3;
-double rc = 2.5;
+double rc = 20;
 double h = 0.01;
-system1 sys(Nx,densite,rc,0.5);
+system1 sys(Nx,densite,rc,1);
 sys.init_system(1.0);
+cout << "end init";
 //for (int k = 0; k<sys.list_particle.size();k++){sys.list_particle[k].display();cout << endl;}
 //cout << "|||||||||||||||||||||||||||||||||||||||||||" << endl;
-sys.integration_neighbour(h,1000);
+sys.integration_neighbour(h,100);
 
 ///int n = sys.list_particle.size();
 ///fstream fichx, fichy;
