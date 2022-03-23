@@ -55,6 +55,7 @@ double y;
 int n = 0;
 char * cell_name = new char[15];
 cell();
+//~cell();
 cell(double x_, double y_);
 cell(const cell &);
 virtual ~cell();

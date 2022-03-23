@@ -17,6 +17,8 @@ for k in range(100):
     b = int(n)+ k*int(n)
     ims.append(plt.plot(X[a:b],Y[a:b],linestyle = ' ',marker = 'o',color = 'r',alpha = 0.5,markersize = 2))
 
+plt.show()
+
 ani = animation.ArtistAnimation(fig, ims,interval = 1,repeat = True)
 ani.save("ani.gif",fps = 1000,writer = 'Pillow')
 #plt.show(block = False)
