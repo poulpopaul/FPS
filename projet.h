@@ -49,8 +49,8 @@ private:
   char * cell_name = new char[15];
 public:
   vector<int> list_index_particle;
-  double x;
-  double y;
+  double move_x;
+  double move_y;
   int n = 0;
   cell();
   cell(double x_, double y_);
