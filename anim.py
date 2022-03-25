@@ -4,21 +4,31 @@ import matplotlib.animation as animation
 
 X = np.loadtxt(r"x.txt")
 Y = np.loadtxt(r"y.txt")
+T = np.loadtxt(r"t.txt")
+C = [1]
+for t in T:
+    if t==T[0]:
+        C.append('r')
+    else:
+        C.append('b')
 
 n = X[0]
+frame = int(len(X)/n)
+x_max = int(max(X[1:int(n)]))
+y_max = int(max(Y[1:int(n)]))
 
 
-ims = []
-fig = plt.figure()
-plt.xlim(0, 32)
-plt.ylim(0, 32)
-for k in range(100):
-    a = 1 +k*int(n)
-    b = int(n)+ k*int(n)
-    ims.append(plt.plot(X[a:b],Y[a:b],linestyle = ' ',marker = 'o',color = 'r',alpha = 0.5,markersize = 2))
+fig, ax = plt.subplots(figsize=(6,6))
+def update(i):
+    ax.clear()
+    ax.set_xlim(0,x_max)
+    ax.set_ylim(0,y_max)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    a = 1 +i*int(n)
+    b = int(n)+ i*int(n)
+    ax.scatter(X[a:b],Y[a:b],marker = 'o',c = C[a:b],alpha = 0.5,s = 4)
 
-plt.show()
 
-ani = animation.ArtistAnimation(fig, ims,interval = 1,repeat = True)
-ani.save("ani.gif",fps = 1000,writer = 'Pillow')
-#plt.show(block = False)
+ani = animation.FuncAnimation(fig, update, frames=frame,interval = frame/4)
+ani.save("ani.gif",writer = 'Pillow')

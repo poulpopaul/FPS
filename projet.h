@@ -35,9 +35,10 @@ class particle: public vect{
   vect X;
   vect V;
   vect A;
+  double type;
   particle();
   particle(const particle &);
-  particle(vect X_, vect V_, vect A_);
+  particle(vect X_, vect V_, vect A_,double type_);
   virtual ~particle();
   particle& operator=(const particle&);
 };
@@ -104,7 +105,7 @@ public:
   system1(int Nx_, double density_, double rc_, double deltaR_);
   system1(const system1&s);
   virtual ~system1();
-  void init_particle(int i,vect X,vect V);
+  void init_particle(int i,vect X,vect V,double type_);
   void init_system(double velocity);
   void move_particle(particle* p, int index, vect* X1);
   void construct_neighbour_list();

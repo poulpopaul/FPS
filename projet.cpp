@@ -37,12 +37,12 @@ vect::~vect()
 
 
 particle::particle():
-X(vect(0,0)),V(vect(0,0)),A(vect(0,0))
+X(vect(0,0)),V(vect(0,0)),A(vect(0,0)),type(1)
 {
 }
 
-particle::particle(vect X_, vect V_, vect A_):
-  X(X_),V(V_),A(A_)
+particle::particle(vect X_, vect V_, vect A_,double type_):
+  X(X_),V(V_),A(A_),type(type_)
 {
 }
 
@@ -51,12 +51,14 @@ particle::particle(const particle &p): vect(p)
 X = p.X;
 V = p.V;
 A = p.A;
+type = p.type;
 }
 
 particle& particle::operator=(const particle&p){
   X = p.X;
   V = p.V;
   A = p.A;
+  type = p.type;
   return *this;
 }
 
@@ -236,7 +238,8 @@ system1::~system1(){
   delete system1_name;
 }
 
-void system1::init_particle(int index,vect X,vect V){
+void system1::init_particle(int index,vect X,vect V,double type_){
+  this->list_particle[index].type = type_;
   this->list_particle[index].X = X;
   this->list_particle[index].V = V;
   double i = int(X.x/double(this->lc));
@@ -247,7 +250,8 @@ void system1::init_particle(int index,vect X,vect V){
 void system1::init_system(double velocity){
   double dx = this->L/double(this->Nx);
   cout << "initial distance : " << dx << endl;
-   if (dx <= diameter){   throw "Density: too high!";
+   if (dx <= diameter){   cout << "Density too high !"<<endl;
+   throw "Density: too high!";
    }
    else{
   double dy = dx;
@@ -257,12 +261,14 @@ void system1::init_system(double velocity){
   double py = 0.0;
    srand( (unsigned)time( NULL ) );
    for (int k = 0; k<this->N; k++){
+     double t = 5; 
       double a = (rand()/double(RAND_MAX))*M_PI*2.0;  
       double vx = velocity*cos(a);
       double vy = velocity*sin(a);
       px += vx;
       py += vy;
-      init_particle(k,vect(x,y),vect(vx,vy));
+      if ((x - 0.5*L)*(x - 0.5*L) + (y - 0.5*L)*(y - 0.5*L) <= L*5){t = 0.1;}
+      init_particle(k,vect(x,y),vect(vx,vy),t);
       x += dx;
       if (x > this->L){
         x = dx*0.5;
@@ -363,16 +369,16 @@ void system1::compute_force(){
                     double ir2 = 1.0/double(r2);
                     double ir6 = ir2*ir2*ir2;
                     double v = 24.0*ir6*(ir6-0.5);
-                      if (abs(v)>1E3){
+                     if (abs(v)>10){
                         v=1;
                       }
                       double f = 2.0*v*ir2;
                       double fx = f*dx;
                       double fy = f*dy;
-                      this->list_particle[id1].A.x = this->list_particle[id1].A.x + fx;
-                      this->list_particle[id1].A.y = this->list_particle[id1].A.y + fy;
-                      this->list_particle[id0].A.x = this->list_particle[id0].A.x - fx;
-                      this->list_particle[id0].A.y = this->list_particle[id0].A.y - fy;
+                      this->list_particle[id1].A.x = this->list_particle[id1].A.x + fx*this->list_particle[id1].type;
+                      this->list_particle[id1].A.y = this->list_particle[id1].A.y + fy*this->list_particle[id1].type;
+                      this->list_particle[id0].A.x = this->list_particle[id0].A.x - fx*this->list_particle[id0].type;
+                      this->list_particle[id0].A.y = this->list_particle[id0].A.y - fy*this->list_particle[id0].type;
                       this->E_pot += 4.0*ir6*(ir6-1.0);
                       this->viriel +=v;
                 }
@@ -418,7 +424,7 @@ void system1::compute_force_with_neighbour(){
       double ir2 = 1.0/double(r2);
       double ir6 = ir2*ir2*ir2;
       double v = 24.0*ir6*(ir6-0.5);
-      if (abs(v) > 1E3){v=1;}
+      if (abs(v) > 5){v=1;}
       double f = 2.0*v*ir2;
       double fx = f*dX.x;
       double fy = f*dX.y;
@@ -483,6 +489,8 @@ void system1::verlet(double h, double hd2){
   for (int k =0; k<this->N;k++){
     particle *p;
     p = &list_particle[k];
+    if ((p->A.x)*(p->A.x) + (p->A.y)*(p->A.y) > 10){p->A.x = 1;
+    p->A.y = 1;}
     p->V = p->V + hd2*p->A;
     vect X1(p->X.x + h*p->V.x,p->X.y+h*p->V.y);
     this->move_particle(p,k,&X1);
@@ -532,9 +540,10 @@ cout <<"nb: "<< nb << endl;
 void system1::integration(double h,int n){
   clock_t begin = clock();
   int taille = this->list_particle.size();
-  fstream fichx, fichy;
+  fstream fichx, fichy, ficht;
   fichx.open("x.txt", ios::out);
   fichy.open("y.txt", ios::out);
+  ficht.open("t.txt", ios::out);
   fichx << taille << endl;
   fichy << taille << endl;
   double hd2 = h*0.5;
@@ -543,6 +552,7 @@ void system1::integration(double h,int n){
     for (int k = 0; k<taille; k++){
       fichx << this->list_particle[k].X.x << endl;
       fichy << this->list_particle[k].X.y << endl;
+      ficht << this->list_particle[k].type << endl;
     }
     this->verlet(h,hd2);
   }
@@ -555,9 +565,10 @@ void system1::integration_neighbour(double h,int n){
   clock_t begin = clock();
   double hd2 = h*0.5;
   int taille = this->list_particle.size();
-  fstream fichx, fichy;
+  fstream fichx, fichy,ficht;
   fichx.open("x.txt", ios::out);
   fichy.open("y.txt", ios::out);
+  ficht.open("t.txt", ios::out);
   fichx << taille << endl;
   fichy << taille << endl;
   for (int i = 0; i<n;i++){
@@ -565,6 +576,7 @@ void system1::integration_neighbour(double h,int n){
     for (int k = 0; k<taille; k++){
       fichx << this->list_particle[k].X.x << endl;
       fichy << this->list_particle[k].X.y << endl;
+      ficht << this->list_particle[k].type << endl;
     }
     this->verlet_neighbour(h,hd2);
   }
