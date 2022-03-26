@@ -90,8 +90,8 @@ public:
   double deltaR;
   double rv;
   double rv2;
-  double radius = 0.5;
-  double diameter = 1;
+  double radius = 5;
+  double diameter = 10;
   double L;
   double area;
   double half_L;

@@ -250,10 +250,10 @@ void system1::init_particle(int index,vect X,vect V,double type_){
 void system1::init_system(double velocity){
   double dx = this->L/double(this->Nx);
   cout << "initial distance : " << dx << endl;
-   if (dx <= diameter){   cout << "Density too high !"<<endl;
-   throw "Density: too high!";
-   }
-   else{
+   //if (dx <= diameter){   cout << "Density too high !"<<endl;
+   //throw "Density: too high!";
+   //}
+  // else{
   double dy = dx;
   double x = dx*0.5;
   double y = x;
@@ -267,7 +267,7 @@ void system1::init_system(double velocity){
       double vy = velocity*sin(a);
       px += vx;
       py += vy;
-      if ((x - 0.5*L)*(x - 0.5*L) + (y - 0.5*L)*(y - 0.5*L) <= L*5){t = 0.1;}
+      if ((x - 0.5*L)*(x - 0.5*L) + (y - 0.5*L)*(y - 0.5*L) <= L*2){t = 0.1;}
       init_particle(k,vect(x,y),vect(vx,vy),t);
       x += dx;
       if (x > this->L){
@@ -280,7 +280,7 @@ void system1::init_system(double velocity){
       vect S(px/double(this->N),py/double(this->N));
       this->list_particle[k].V = p.V - S;  
     }
-   }
+  // }
 compute_force();
 construct_neighbour_list();
 }
@@ -365,10 +365,10 @@ void system1::compute_force(){
                 double dx = this->list_particle[id1].X.x+ c1->move_x -this->list_particle[id0].X.x;
                 double dy = this->list_particle[id1].X.y+ c1->move_y-this->list_particle[id0].X.y;
                 double r2 = dx*dx + dy*dy;
-                if (r2 < this->rc2){
-                    double ir2 = 1.0/double(r2);
+                double ir2 = 1.0/double(r2);
                     double ir6 = ir2*ir2*ir2;
                     double v = 24.0*ir6*(ir6-0.5);
+                if (r2 < this->rc2 && r2 > this->diameter){
                      if (abs(v)>10){
                         v=1;
                       }
@@ -381,6 +381,29 @@ void system1::compute_force(){
                       this->list_particle[id0].A.y = this->list_particle[id0].A.y - fy*this->list_particle[id0].type;
                       this->E_pot += 4.0*ir6*(ir6-1.0);
                       this->viriel +=v;
+                }
+                if (r2 <this->diameter/10){
+                  if (abs(v)>100){
+                        v=1;
+                  }
+                    if (list_particle[id1].type == list_particle[id0].type){
+                      this->list_particle[id1].V.x = -this->list_particle[id1].V.x;//this->list_particle[id0].type;
+                      this->list_particle[id1].V.y = -this->list_particle[id1].V.y;//this->list_particle[id0].type;
+                      this->list_particle[id0].V.x = -this->list_particle[id0].V.x; //* this->list_particle[id1].type;
+                      this->list_particle[id0].V.y = -this->list_particle[id0].V.y; //* this->list_particle[id1].type;
+                    }
+                    if (list_particle[id1].type < list_particle[id0].type){
+                      this->list_particle[id1].V.x = -this->list_particle[id1].V.x;//this->list_particle[id0].type;
+                      this->list_particle[id1].V.y = -this->list_particle[id1].V.y;//this->list_particle[id0].type;
+                      this->list_particle[id0].V.x = -this->list_particle[id0].V.x; //* this->list_particle[id1].type;
+                      this->list_particle[id0].V.y = -this->list_particle[id0].V.y; //* this->list_particle[id1].type;
+                    }
+                    if (list_particle[id1].type > list_particle[id0].type){
+                      this->list_particle[id1].V.x = -this->list_particle[id1].V.x;//this->list_particle[id0].type;
+                      this->list_particle[id1].V.y = -this->list_particle[id1].V.y;//this->list_particle[id0].type;
+                      this->list_particle[id0].V.x = -this->list_particle[id0].V.x; //* this->list_particle[id1].type;
+                      this->list_particle[id0].V.y = -this->list_particle[id0].V.y; //* this->list_particle[id1].type;
+                    }
                 }
               } 
             }
@@ -548,7 +571,8 @@ void system1::integration(double h,int n){
   fichy << taille << endl;
   double hd2 = h*0.5;
   for (int i = 0; i<n;i++){
-    cout << i << endl;
+    system("clear");
+    cout << i+1 << " / "<< n << endl;
     for (int k = 0; k<taille; k++){
       fichx << this->list_particle[k].X.x << endl;
       fichy << this->list_particle[k].X.y << endl;

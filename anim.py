@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-
+print("The GIF animation is being created...")
 X = np.loadtxt(r"x.txt")
 Y = np.loadtxt(r"y.txt")
 T = np.loadtxt(r"t.txt")
@@ -27,8 +27,10 @@ def update(i):
     ax.set_yticks([])
     a = 1 +i*int(n)
     b = int(n)+ i*int(n)
-    ax.scatter(X[a:b],Y[a:b],marker = 'o',c = C[a:b],alpha = 0.5,s = 4)
+    ax.scatter(X[a:b],Y[a:b],marker = 'o',c = C[a:b],alpha = 0.6,s = 4)
 
 
 ani = animation.FuncAnimation(fig, update, frames=frame,interval = frame/4)
-ani.save("ani.gif",writer = 'Pillow')
+writergif = animation.PillowWriter(fps = 30) 
+ani.save("ani.gif",writer=writergif)
+print("ani.gif saved !")
