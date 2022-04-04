@@ -90,8 +90,8 @@ public:
   double deltaR;
   double rv;
   double rv2;
-  double radius = 5;
-  double diameter = 10;
+  double radius = 0.5;
+  double diameter = 1;
   double L;
   double area;
   double half_L;
@@ -111,6 +111,7 @@ public:
   void construct_neighbour_list();
   void compute_force();
   void compute_force_with_neighbour();
+  vect compute_force_mag(particle p);
   void verlet(double h, double hd2);
   void verlet_neighbour(double h, double hd2);
   void integration(double h,int n);
