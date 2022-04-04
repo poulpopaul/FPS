@@ -261,13 +261,13 @@ void system1::init_system(double velocity){
   double py = 0.0;
    srand( (unsigned)time( NULL ) );
    for (int k = 0; k<this->N; k++){
-     double t = 5; 
+     double t = 1; 
       double a = (rand()/double(RAND_MAX))*M_PI*2.0;  
       double vx = velocity*cos(a);
       double vy = velocity*sin(a);
       px += vx;
       py += vy;
-      if ((x - 0.5*L)*(x - 0.5*L) + (y - 0.5*L)*(y - 0.5*L) <= L*2){t = 0.1;}
+      if ((x - 0.5*L)*(x - 0.5*L) + (y - 0.5*L)*(y - 0.5*L) <= 2*L){t = 0.1;}
       init_particle(k,vect(x,y),vect(vx,vy),t);
       x += dx;
       if (x > this->L){
@@ -342,6 +342,34 @@ delete j1;
 //cout << "cn: " << millis;
 } 
 
+
+vect system1::compute_force_mag(particle p){
+  double fx = 0.0;
+  double fy = 0.0;
+  for (int i = 0; i<this->Nc;i++){
+    for (int j = 0; j<this->Nc;j++){
+      this->Grid.get_cell(&i,&j);
+      cell *c;
+      c = &this->Grid.tab[i][j];
+      for (int index : c->list_index_particle){
+        if (this->list_particle[index].type == 0.1){
+        double dx = this->list_particle[index].X.x+ c->move_x - p.X.x;
+        double dy = this->list_particle[index].X.y+ c->move_y- p.X.y;
+        double r2 = dx*dx + dy*dy;
+        if (r2 > this->diameter/100.){
+        double ir4 = (1/r2) * (1/r2);
+        fx += -1 * ir4 * dx/sqrt(dx*dx + dy*dy);
+        fy += -1 * ir4 * dy/sqrt(dx*dx + dy*dy);
+        }
+      }
+      }
+    }
+  }
+return vect(fx,fy);
+
+}
+
+
 void system1::compute_force(){
   for (int k = 0; k<this->N; k++){
     this->list_particle[k].A = vect(0,0);
@@ -360,6 +388,13 @@ void system1::compute_force(){
           cell *c1;
           c1 = &this->Grid.tab[*i1][*j1];
           for (int id0 : this->Grid.tab[i][j].list_index_particle){
+            if (this->list_particle[id0].type == 0.1){
+              vect F = compute_force_mag(this->list_particle[id0]);
+              if (abs(F.x)< 1000 && abs(F.y) <1000){
+              this->list_particle[id0].A.x = this->list_particle[id0].A.x + F.x;
+              this->list_particle[id0].A.y = this->list_particle[id0].A.y + F.y;
+            }
+            }
             for (int id1 : this->Grid.tab[*i1][*j1].list_index_particle){
               if (id1 < id0){
                 double dx = this->list_particle[id1].X.x+ c1->move_x -this->list_particle[id0].X.x;
@@ -368,21 +403,67 @@ void system1::compute_force(){
                 double ir2 = 1.0/double(r2);
                     double ir6 = ir2*ir2*ir2;
                     double v = 24.0*ir6*(ir6-0.5);
-                if (r2 < this->rc2 && r2 > this->diameter){
-                     if (abs(v)>10){
+                if (r2 < this->rc2 && r2 > this->diameter/100.){
+                     if (abs(v)>100){
                         v=1;
                       }
                       double f = 2.0*v*ir2;
                       double fx = f*dx;
                       double fy = f*dy;
+                   // //    //cout << "fx : " << fx << endl;
+                   //   for (int l = 0; l<this->list_particle.size() && l != id0;l++){
+                   //     if (this->list_particle[l].type == 0.1){
+                   //     double dx1 = this->list_particle[id0].X.x -this->list_particle[l].X.x;
+                   //     double dy1 = this->list_particle[id0].X.y-this->list_particle[l].X.y;
+                   //     double r4 = (dx1*dx1 + dy1*dy1) * (dx1*dx1 + dy1*dy1);
+                   //     if (r4 > (this->diameter/1000.)*this->diameter/1000.){
+                  //      fx += (1/r4)* dx1/sqrt(dx1*dx1 + dy1*dy1);
+                 //       fy += (1/r4)* dy1/sqrt(dx1*dx1 + dy1*dy1);
+              //          }
+                //        else{if (list_particle[id1].type == list_particle[id0].type){
+               //       this->list_particle[id1].V.x = this->list_particle[id0].V.x;//this->list_particle[id0].type;
+               //       this->list_particle[id1].V.y = this->list_particle[id0].V.y;//this->list_particle[id0].type;
+               //       this->list_particle[id0].V.x = this->list_particle[id1].V.x; //* this->list_particle[id1].type;
+               //       this->list_particle[id0].V.y = this->list_particle[id1].V.y; //* this->list_particle[id1].type;
+               //     }}
+               //       
+              //         }
+              //   }
+              //        }
+                      if (list_particle[id1].type == list_particle[id0].type){
+                        if(list_particle[id0].type == 0.1){
+                      v = 24.0*ir6*(ir6-10.0);
+                      f = 2.0*v*ir2;
+                      fx = f*dx;
+                      fy = f*dy;
+                        }
+                      if (abs(fx) > 100){fx = 1.;}
+                      if (abs(fy) > 100){fy = 1.;}
                       this->list_particle[id1].A.x = this->list_particle[id1].A.x + fx*this->list_particle[id1].type;
                       this->list_particle[id1].A.y = this->list_particle[id1].A.y + fy*this->list_particle[id1].type;
                       this->list_particle[id0].A.x = this->list_particle[id0].A.x - fx*this->list_particle[id0].type;
                       this->list_particle[id0].A.y = this->list_particle[id0].A.y - fy*this->list_particle[id0].type;
                       this->E_pot += 4.0*ir6*(ir6-1.0);
                       this->viriel +=v;
+                      }
+                      if (list_particle[id1].type == 1 && list_particle[id0].type == 0.1){
+                      this->list_particle[id1].A.x = this->list_particle[id1].A.x - fx*20;
+                      this->list_particle[id1].A.y = this->list_particle[id1].A.y - fy*20;
+                      this->list_particle[id0].A.x = this->list_particle[id0].A.x + fx*0.1;
+                      this->list_particle[id0].A.y = this->list_particle[id0].A.y + fy*0.1;
+                      this->E_pot += 4.0*ir6*(ir6-1.0);
+                      this->viriel +=v;
+                      }
+                      if (list_particle[id0].type == 1 && list_particle[id1].type == 0.1){
+                      this->list_particle[id0].A.x = this->list_particle[id0].A.x - fx*20;
+                      this->list_particle[id0].A.y = this->list_particle[id0].A.y - fy*20;
+                      this->list_particle[id1].A.x = this->list_particle[id1].A.x + fx*0.1;
+                      this->list_particle[id1].A.y = this->list_particle[id1].A.y + fy*0.1;
+                      this->E_pot += 4.0*ir6*(ir6-1.0);
+                      this->viriel +=v;
+                      }
                 }
-                if (r2 <this->diameter/10){
+                if (r2 <this->diameter/100.){
                   if (abs(v)>100){
                         v=1;
                   }
@@ -407,6 +488,7 @@ void system1::compute_force(){
                 }
               } 
             }
+           
           }
         }
       }
@@ -443,19 +525,77 @@ void system1::compute_force_with_neighbour(){
       dX.y = dX.y + this->L;
     }
     double r2 = dX.x*dX.x + dX.y*dX.y;
-    if (r2 < this->rc2){
-      double ir2 = 1.0/double(r2);
+    double r3 = pow(r2, 1.5);
+    double ir2 = 1.0/double(r2);
       double ir6 = ir2*ir2*ir2;
-      double v = 24.0*ir6*(ir6-0.5);
-      if (abs(v) > 5){v=1;}
-      double f = 2.0*v*ir2;
-      double fx = f*dX.x;
-      double fy = f*dX.y;
-      p->A = p->A - vect(fx,fy);
-      p1->A = p1->A + vect(fx,fy);
-      this->E_pot += 4.0*ir6*(ir6-1.0);
-      this->viriel +=v;
-    }
+                    double v = 24.0*ir6*(ir6-0.5);
+                if (r2 < this->rc2 && r2 > this->diameter/1000){
+                     if (abs(v)>10){
+                        v=1;
+                      }
+                      double f = 2.0*v*ir2;
+                      double fx = f*dX.x;
+                      double fy = f*dX.y;
+                      if (p1->type == p->type && p1->type == 0.1){
+                        double B = 1/r3;
+                        double fb = 30*B;
+                        p1->A.x = p1->A.x - fb;
+                        p1->A.y = p1->A.y - fb;
+                        p->A.x = p->A.x + fb;
+                        p->A.y = p->A.y + fb;
+                      }
+                      p1->A.x = p1->A.x + fx*p1->type;
+                      p1->A.y = p1->A.y + fy*p1->type;
+                      p->A.x = p->A.x - fx*p->type;
+                      p->A.y = p->A.y - fy*p->type;
+                      this->E_pot += 4.0*ir6*(ir6-1.0);
+                      this->viriel +=v;
+                }
+             //   if (r2 > 2*this->rc2 && p1->type == p->type && p1->type == 0.1){
+              //    double f = 2.0*v*ir2;
+               //       double fx = f*dX.x;
+              //        double fy = f*dX.y;
+              //    p1->A.x = p1->A.x + fx*3;
+              //    p1->A.y = p1->A.y + fy*3;
+              //    p->A.x = p->A.x + fx*3;
+               //   p->A.y = p->A.y + fy*3;
+               // }
+                if (r2 <this->diameter/1000){
+                  if (abs(v)>100){
+                        v=1;
+                  }
+                    if (p1->type == p->type){
+                      p1->V.x = -p1->V.x;//p.type;
+                      p1->V.y = -p1->V.y;//p.type;
+                      p->V.x = -p->V.x; //* p1->type;
+                      p->V.y = -p->V.y; //* p1->type;
+                    }
+                    if (p1->type < p->type){
+                      p1->V.x = -p1->V.x;//p->type;
+                      p1->V.y = -p1->V.y;//p->type;
+                      p->V.x = -p->V.x; //* p1->type;
+                      p->V.y = -p->V.y; //* p1->type;
+                    }
+                    if (p1->type > p->type){
+                      p1->V.x = -p1->V.x;//p->type;
+                      p1->V.y = -p1->V.y;//p->type;
+                      p->V.x = -p->V.x; //* p1->type;
+                      p->V.y = -p->V.y; //* p1->type;
+                    }
+                }
+    //if (r2 < this->rc2){
+    //  double ir2 = 1.0/double(r2);
+     // double ir6 = ir2*ir2*ir2;
+    //  double v = 24.0*ir6*(ir6-0.5);
+    //  if (abs(v) > 10){v=1;}
+     // double f = 2.0*v*ir2;
+     // double fx = f*dX.x;
+     // double fy = f*dX.y;
+     // p->A = p->A - vect(fx,fy);
+     // p1->A = p1->A + vect(fx,fy);
+     // this->E_pot += 4.0*ir6*(ir6-1.0);
+     // this->viriel +=v;
+    //}
   }
 //clock_t end = clock();
 //unsigned long millis = (end -  begin) * 1000 / CLOCKS_PER_SEC;
@@ -512,8 +652,8 @@ void system1::verlet(double h, double hd2){
   for (int k =0; k<this->N;k++){
     particle *p;
     p = &list_particle[k];
-    if ((p->A.x)*(p->A.x) + (p->A.y)*(p->A.y) > 10){p->A.x = 1;
-    p->A.y = 1;}
+   // if ((p->A.x)*(p->A.x) + (p->A.y)*(p->A.y) > 10){p->A.x = 1;
+    //p->A.y = 1;}
     p->V = p->V + hd2*p->A;
     vect X1(p->X.x + h*p->V.x,p->X.y+h*p->V.y);
     this->move_particle(p,k,&X1);
