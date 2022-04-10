@@ -4,7 +4,9 @@
 #include<iostream>
 #include<vector>
 #include<cstring>
+#include<cmath>
 using namespace std;
+
 
 class vect{
   // vect creation for position, velocity and acceleration.
@@ -71,7 +73,7 @@ class grid: public cell{
     cell **tab = new cell*[Nc];
     grid();
     grid( const grid&g);
-    grid(int L_, int N_);
+    grid(int N_, int L_);
     virtual ~grid();
     void get_cell(int* i, int* j);
     void set_cell(int i,int j, int index);
@@ -95,10 +97,10 @@ public:
   double L;
   double area;
   double half_L;
-  double Nc;
+  int Nc;
   double lc;
   grid Grid = grid(Nc,L);;
-  vector<particle> list_particle; //= {}
+  vector<particle> list_particle;
   vector<vect> list_neighbour = {};
   double move_max = 0.0;
   system1();
@@ -106,15 +108,15 @@ public:
   system1(const system1&s);
   virtual ~system1();
   void init_particle(int i,vect X,vect V,double type_);
-  void init_system(double velocity);
+  void init_system(double velocity,double size);
   void move_particle(particle* p, int index, vect* X1);
   void construct_neighbour_list();
-  void compute_force();
+  void compute_force(bool mag);
   void compute_force_with_neighbour();
   vect compute_force_mag(particle p);
-  void verlet(double h, double hd2);
+  void verlet(double h, double hd2,bool mag);
   void verlet_neighbour(double h, double hd2);
-  void integration(double h,int n);
+  void integration(double h,int n,bool mag);
   void integration_neighbour(double h,int n);
   system1& operator=(const system1&);
 

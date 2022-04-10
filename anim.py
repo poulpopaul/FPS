@@ -13,9 +13,9 @@ for t in T:
         C.append('b')
 
 n = X[0]
-frame = int(len(X)/n)
-x_max = int(max(X[1:int(n)]))
-y_max = int(max(Y[1:int(n)]))
+frame = 500#int(len(X)/n)
+x_max = max(X[1:int(n)])
+y_max = max(Y[1:int(n)])
 
 
 fig, ax = plt.subplots(figsize=(6,6))
@@ -25,9 +25,10 @@ def update(i):
     ax.set_ylim(0,y_max)
     ax.set_xticks([])
     ax.set_yticks([])
-    a = 1 +i*int(n)
-    b = int(n)+ i*int(n)
-    ax.scatter(X[a:b],Y[a:b],marker = 'o',c = C[a:b],alpha = 0.6,s = 4)
+    #ax.grid()
+    a = 1 +2*i*int(n)
+    b = int(n)+ 2*i*int(n) +1
+    ax.scatter(X[a:b],Y[a:b],marker = 'o',c = C[a:b],alpha = 0.6,s = 1)
 
 
 ani = animation.FuncAnimation(fig, update, frames=frame,interval = frame/4)
