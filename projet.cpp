@@ -438,8 +438,23 @@ Also takes into account the magnetic force for particles of type "1".
             }
             for (int id1 : this->Grid.tab[*i1][*j1].list_index_particle){
               if (id1 < id0){
-                double dx = this->list_particle[id1].X.x+ c1->move_x -this->list_particle[id0].X.x;
-                double dy = this->list_particle[id1].X.y+ c1->move_y-this->list_particle[id0].X.y;
+                vect dX = this->list_particle[id1].X - this->list_particle[id0].X;
+                if (dX.x >= this->half_L){
+                  dX.x = dX.x - this->L;
+                }
+                if (dX.x < -this->half_L){
+                  dX.x = dX.x + this->L;
+                }
+                if (dX.y >= this->half_L){
+                  dX.y = dX.y - this->L;
+                }
+                if (dX.y < -this->half_L){
+                 dX.y = dX.y + this->L;
+                }
+                double dx = dX.x;
+                double dy = dX.y;
+                //double dx = this->list_particle[id1].X.x+ c1->move_x -this->list_particle[id0].X.x;
+                //double dy = this->list_particle[id1].X.y+ c1->move_y-this->list_particle[id0].X.y;
                 double r2 = dx*dx + dy*dy;
                 double ir2 = 1.0/double(r2);
                 double ir6 = ir2*ir2*ir2;

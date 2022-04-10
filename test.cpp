@@ -3,22 +3,23 @@
 using namespace std;
 #include"projet.h"
 #include<fstream>
+
 int main(){
 
 /* System initialization
 ##########################################
 */
 
-int Nx = 20;
+int Nx = 100;
 double density = 0.3;
 double rc = 2.5;
-double h = 0.0001;
+double h = 1E-3;
 double delta_r = 0.5;
 double size = 1;
 
 system1 sys(Nx,density,rc,delta_r);
 sys.mag = true;
-sys.cutoff = 100;
+sys.cutoff = 1E3; //No cut-off
 sys.init_system(1.,size);
 
 
@@ -42,8 +43,8 @@ fichy << taille << endl;
 ##########################################
 */
 
-int N_it1 = 100; //main loop (file filling)
-int N_it2 = 1;
+int N_it1 = 1000; //main loop (file filling)
+int N_it2 = 10;
 int N_it_tot = N_it1 * N_it2; 
 
 clock_t begin = clock();
@@ -62,6 +63,7 @@ fiche<< sys.energy << endl;
 fichec<< sys.E_kin << endl;
 fichep<< sys.E_pot << endl;
 sys.integration(h,N_it2);
+//sys.integration_neighbour(h,N_it2);
 
 
 /* Graphic interface
@@ -81,6 +83,7 @@ if(c%int((N_it1/20.)) == 0 || c == N_it1 -1){
   p+= 5;
   }
 }
+
 clock_t end = clock();
 
 unsigned long sec = (end -  begin) / CLOCKS_PER_SEC;
@@ -97,9 +100,9 @@ cout << "*********************************" <<endl<<endl;
 
 system("python3 anim.py"); 
 
-/* Creates a GIF animation: By default the number of frames is N_it1 
-(be careful, you have to lower it if N_it1 becomes big, otherwise 
-the creation will be very long and the GIF very heavy) */
+/* Creates and save a GIF animation: By default the number of frames is N_it1 
+(be careful, you have to lower it if N_it1 becomes big, otherwise  the creation
+will be very long and the GIF very heavy). A maximum of 1000 frames is ok (45 MB). */
 
 return 0;
 }
