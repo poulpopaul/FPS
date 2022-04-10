@@ -446,12 +446,12 @@ Also takes into account the magnetic force for particles of type "1".
                 double v=0;
                 double f=0;
                 if (r2 < this->rc2){
-                      if (this->list_particle[id0].type == 0.1 && this->list_particle[id1].type == 0.1){
+                      if (this->list_particle[id0].type == 1 && this->list_particle[id1].type == 1){
                         v = (24.0/3.)*ir6*((ir6/0.0134)- 0.5/(0.3659));
                         f = 2.0*v*sqrt(ir2);
                         this->E_pot += 4.0*ir6*((ir6/0.0134)-1.0/0.3659);
                       }
-                      if (this->list_particle[id0].type == 1 && this->list_particle[id1].type == 1){
+                      if (this->list_particle[id0].type == 0 && this->list_particle[id1].type == 0){
                         v = (24.0)*ir6*(ir6-0.5);
                         f = 2.0*v*sqrt(ir2);
                         this->E_pot += 4.0*ir6*(ir6-1.0);
@@ -515,12 +515,12 @@ Thus, the magnetic force has not been implemented here. */
     double v = 0;
     double f= 0;
     if (r2 < this->rc2){
-      if (p->type == 0.1 && p1->type == 0.1){
+      if (p->type == 1 && p1->type == 1){
         v = (24.0/3.)*ir6*((ir6/0.0134)- 0.5/(0.3659));
         f = 2.0*v*sqrt(ir2);
         this->E_pot += 4.0*ir6*((ir6/0.0134)-1.0/0.3659);
       }
-      if (p->type == 1 && p1->type == 1){
+      if (p->type == 0 && p1->type == 0){
         v = (24.0)*ir6*(ir6-0.5);
         f = 2.0*v*sqrt(ir2);
         this->E_pot += 4.0*ir6*(ir6-1.0);
