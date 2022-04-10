@@ -109,18 +109,18 @@ public:
   virtual ~system1();
   void init_particle(int i,vect X,vect V,double type_);
   void init_system(double velocity,double size);
+  double cutoff = 0;
+  bool mag = false;
   void move_particle(particle* p, int index, vect* X1);
   void construct_neighbour_list();
-  void compute_force(bool mag);
+  void compute_force();
   void compute_force_with_neighbour();
   vect compute_force_mag(particle p);
-  void verlet(double h, double hd2,bool mag);
+  void verlet(double h, double hd2);
   void verlet_neighbour(double h, double hd2);
-  void integration(double h,int n,bool mag);
+  void integration(double h,int n);
   void integration_neighbour(double h,int n);
   system1& operator=(const system1&);
-
-  ////////////////////////////////////
   double energy = 0;
   double viriel = 0;
   double E_pot = 0;
